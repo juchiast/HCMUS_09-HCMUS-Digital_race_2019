@@ -73,10 +73,10 @@ static void processImageCallback(cv::Mat frame)
     // binary = birdViewTranform(binary);
     // binaryColor = birdViewTranform(binaryColor);
 
-    // cv::Mat frameIPM = birdViewTranform(frame);
+    binary = birdViewTranform(binary);
 
     // cv::hconcat(frameIPM, binaryColor, visualize);
-    // cv::imshow("birdview", visualize);
+    cv::imshow("birdview", binary);
     cv::waitKey(1);
 }
 
@@ -104,13 +104,17 @@ int main(int argc, char **argv)
 
     cv::namedWindow("config");
     
-
     cv::createTrackbar("low hue", "config", &low_H, 180);
     cv::createTrackbar("high hue", "config", &high_H, 180);
     cv::createTrackbar("low saturation", "config", &low_S, 255);
     cv::createTrackbar("high saturation", "config", &high_S, 255);
     cv::createTrackbar("low value", "config", &low_V, 255);
     cv::createTrackbar("high value", "config", &high_V, 255);
+
+    cv::createTrackbar("skyline", "config", &skyLine, 640);
+    cv::createTrackbar("birdview width", "config", &BIRDVIEW_WIDTH, 640);
+    cv::createTrackbar("birdview height", "config", &BIRDVIEW_HEIGHT, 640);
+    cv::createTrackbar("delta_width_bot", "config", &delta_width_bot, 640);
 
     
     image_transport::ImageTransport it(nh);
@@ -119,7 +123,13 @@ int main(int argc, char **argv)
     // recorder = cv::VideoWriter("outcpp.avi",CV_FOURCC('M','J','P','G'),10, cv::Size(320, 240));
 
     ROS_INFO("Start recording..");
-    ros::spin();
+    ros::Rate rate{10};
+    while (ros::ok())
+    {
+        ros::spinOnce();
+        cv::waitKey(1);
+        rate.sleep();
+    }
 
     // recorder.release();
 

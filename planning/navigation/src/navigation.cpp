@@ -172,7 +172,6 @@ void Navigation::turnRight()
     while (i >= 0 && rightLane[i] == null) i--;
     if (i < 0)
     {
-        currentSteer = -30;
         return;
     }
 
@@ -197,7 +196,6 @@ void Navigation::turnLeft()
     while (i >= 0 && leftLane[i] == null) i--;
     if (i < 0)
     {
-        currentSteer = 30;
         return;
     }
 

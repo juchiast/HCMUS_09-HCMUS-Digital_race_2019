@@ -10,17 +10,31 @@
 #include <vector>
 #include <math.h>
 
-#include "detectlane.h"
 
 using namespace std;
 using namespace cv;
+
+class LaneDetector;
+class SignDetector;
+
+enum CommandId
+{
+    None = 0,
+    TurnRight = 1,
+    TurnLeft = 2,
+    Stop = 3,           // Test only
+    Continue = 4        // Test only
+};
 
 class CarControl 
 {
 public:
     CarControl();
     ~CarControl();
+    void receiveCommand(CommandId commandId);
+    void driverCar(cv::Mat image);
     void driverCar(const vector<Point> &left, const vector<Point> &right, float velocity);
+    void doCommand(const vector<Point> &left, const vector<Point> &right, float velocity);
 
 private:
     float errorAngle(const Point &dst);
@@ -39,13 +53,9 @@ private:
 
     float preError;
 
-    float kP;
-    float kI;
-    float kD;
-
-    int t_kP;
-    int t_kI;
-    int t_kD;
+    int commandId;
+    LaneDetector* laneDetector;
+    SignDetector* signDetector;
 };
 
 #endif

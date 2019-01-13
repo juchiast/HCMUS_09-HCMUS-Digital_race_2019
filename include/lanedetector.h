@@ -13,11 +13,11 @@
 using namespace std;
 using namespace cv;
 
-class DetectLane
+class LaneDetector
 {
 public:
-    DetectLane();
-    ~DetectLane();
+    LaneDetector();
+    ~LaneDetector();
 
     void update(const Mat &src);
     
@@ -42,18 +42,19 @@ private:
     void fillLane(Mat &src);
     vector<Mat> splitLayer(const Mat &src, int dir = VERTICAL);
     vector<vector<Point> > centerRoadSide(const vector<Mat> &src, int dir = VERTICAL);
-    void detectLeftRight(const vector<vector<Point> > &points);
+    // bool detectLeftRight(const Point& currentPos, const vector<vector<Point> > &points);
+    void detectLeftRight(const vector<vector<Point>>& points);
     Mat laneInShadow(const Mat &src);
 
     int minThreshold[3] = {0, 0, 180};
-    int maxThreshold[3] = {179, 30, 255};
+    int maxThreshold[3] = {179, 65, 255}; // 179, 30, 255
     int minShadowTh[3] = {90, 43, 36};
     int maxShadowTh[3] = {120, 81, 171};
     int minLaneInShadow[3] = {90, 43, 97};
     int maxLaneInShadow[3] = {120, 80, 171};
     int binaryThreshold = 180;
 
-    int skyLine = 120;
+    int skyLine = 85;
     int shadowParam = 40;
 
     vector<Point> leftLane, rightLane;

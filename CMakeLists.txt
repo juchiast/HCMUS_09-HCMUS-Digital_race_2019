@@ -27,7 +27,8 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME}
-  src/detectlane.cpp
+  src/lanedetector.cpp
+  src/signdetector.cpp
   src/carcontrol.cpp
 )
 
@@ -40,6 +41,4 @@ target_link_libraries(
   ${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
-  ${Boost_LIBRARIES}
 )
-

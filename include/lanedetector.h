@@ -19,7 +19,7 @@ public:
     LaneDetector();
     ~LaneDetector();
 
-    void update(const Mat &src);
+    void update(int priority, const Mat &src);
     
     vector<Point> getLeftLane();
     vector<Point> getRightLane();

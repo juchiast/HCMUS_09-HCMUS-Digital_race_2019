@@ -37,27 +37,37 @@ vector<Point> LaneDetector::getRightLane()
     return rightLane;
 }
 
-void LaneDetector::update(const Mat &src)
+void LaneDetector::update(int priority, const Mat &src)
 {
+    // priority == 1: left, 2: right, 0: forward
     Mat img = preProcess(src);
-    
-    vector<Mat> layers1 = splitLayer(img);
-    vector<vector<Point> > points1 = centerRoadSide(layers1);
-    // vector<Mat> layers2 = splitLayer(img, HORIZONTAL);
-    // vector<vector<Point> > points2 = centerRoadSide(layers2, HORIZONTAL);
+    vector<Mat> layersV, layersH;
+    vector<vector<Point> > pointsV, pointsH;
 
-    detectLeftRight(points1);
+    layersV = splitLayer(img, VERTICAL);
+    pointsV = centerRoadSide(layersV, VERTICAL);
+
+    if (priority != 0)
+    {
+        cv::Mat lane = Mat::zeros(img.size(), CV_8UC3);
+        layersH = splitLayer(img, HORIZONTAL);
+        pointsH = centerRoadSide(layersH, HORIZONTAL);
+
+        detectLeftRight(pointsH);
+    }
+
+    detectLeftRight(pointsV);
 
     Mat birdViewVertical, birdViewHorizontal, lane;
     birdViewVertical = Mat::zeros(img.size(), CV_8UC3);
-    birdViewHorizontal = Mat::zeros(img.size(), CV_8UC3);
+    // birdViewHorizontal = Mat::zeros(img.size(), CV_8UC3);
     lane = Mat::zeros(img.size(), CV_8UC3);
 
-    for (int i = 0; i < points1.size(); i++)
+    for (int i = 0; i < pointsV.size(); i++)
      {
-        for (int j = 0; j < points1[i].size(); j++)
+        for (int j = 0; j < pointsV[i].size(); j++)
         {
-            circle(birdViewVertical, points1[i][j], 1, Scalar(0,0,255), 2, 8, 0 );
+            circle(birdViewVertical, pointsV[i][j], 1, Scalar(0,0,255), 2, 8, 0 );
         }
     }
 
@@ -94,22 +104,22 @@ void LaneDetector::update(const Mat &src)
 Mat LaneDetector::preProcess(const Mat &src)
 {
     Mat imgThresholded, imgHSV, dst;
-    Mat sobely, sobelyHSV, sobelyThresholded;
+    // Mat sobely, sobelyHSV, sobelyThresholded;
 
-    cv::Sobel(src, sobely, CV_8U, 0, 1, 3);
-    cv::cvtColor(sobely, sobelyHSV, cv::COLOR_RGB2HSV);
-    cv::inRange(sobelyHSV, cv::Scalar(0,0,0), cv::Scalar(180, 255, 170), sobelyThresholded);
+    // cv::Sobel(src, sobely, CV_8U, 0, 1, 3);
+    // cv::cvtColor(sobely, sobelyHSV, cv::COLOR_RGB2HSV);
+    // cv::inRange(sobelyHSV, cv::Scalar(0,0,0), cv::Scalar(180, 255, 170), sobelyThresholded);
 
-    cv::bitwise_not(sobelyThresholded, sobelyThresholded);
+    // cv::bitwise_not(sobelyThresholded, sobelyThresholded);
 
     cvtColor(src, imgHSV, COLOR_BGR2HSV);
 
-    inRange(imgHSV, Scalar(minThreshold[0], minThreshold[1], minThreshold[2]), 
-        Scalar(maxThreshold[0], maxThreshold[1], maxThreshold[2]), 
+    inRange(imgHSV, Scalar(minThreshold[0], minThreshold[1], minThreshold[2]),
+        Scalar(maxThreshold[0], maxThreshold[1], maxThreshold[2]),
         imgThresholded);
 
-    cv::max(sobelyThresholded, imgThresholded, imgThresholded);
-    
+    // cv::max(sobelyThresholded, imgThresholded, imgThresholded);
+
 
     dst = birdViewTranform(imgThresholded);
 
@@ -128,15 +138,15 @@ Mat LaneDetector::laneInShadow(const Mat &src)
     cvtColor(src, imgHSV, COLOR_BGR2HSV);
 
     inRange(imgHSV, Scalar(minShadowTh[0], minShadowTh[1], minShadowTh[2]),
-    Scalar(maxShadowTh[0], maxShadowTh[1], maxShadowTh[2]),  
+    Scalar(maxShadowTh[0], maxShadowTh[1], maxShadowTh[2]),
     shadowMask);
 
     src.copyTo(shadow, shadowMask);
 
     cvtColor(shadow, shadowHSV, COLOR_BGR2HSV);
 
-    inRange(shadowHSV, Scalar(minLaneInShadow[0], minLaneInShadow[1], minLaneInShadow[2]), 
-        Scalar(maxLaneInShadow[0], maxLaneInShadow[1], maxLaneInShadow[2]), 
+    inRange(shadowHSV, Scalar(minLaneInShadow[0], minLaneInShadow[1], minLaneInShadow[2]),
+        Scalar(maxLaneInShadow[0], maxLaneInShadow[1], maxLaneInShadow[2]),
         laneShadow);
 
     return laneShadow;
@@ -168,7 +178,7 @@ vector<Mat> LaneDetector::splitLayer(const Mat &src, int dir)
             res.push_back(tmp);
         }
     }
-    else 
+    else
     {
         for (int i = 0; i < colN - slideThickness; i += slideThickness) {
             Mat tmp;
@@ -177,7 +187,7 @@ vector<Mat> LaneDetector::splitLayer(const Mat &src, int dir)
             res.push_back(tmp);
         }
     }
-    
+
     return res;
 }
 
@@ -188,7 +198,7 @@ vector<vector<Point> > LaneDetector::centerRoadSide(const vector<Mat> &src, int 
     for (int i = 0; i < inputN; i++) {
         std::vector<std::vector<Point> > cnts;
         std::vector<Point> tmp;
-        findContours(src[i], cnts, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+        findContours(src[i], cnts, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
         int cntsN = cnts.size();
         if (cntsN == 0) {
             res.push_back(tmp);
@@ -202,7 +212,7 @@ vector<vector<Point> > LaneDetector::centerRoadSide(const vector<Mat> &src, int 
                 Point2f center1 = Point2f(static_cast<float> (M1.m10 / M1.m00), static_cast<float> (M1.m01 / M1.m00));
                 if (dir == VERTICAL) {
                     center1.y = center1.y + slideThickness*i;
-                } 
+                }
                 else
                 {
                     center1.x = center1.x + slideThickness*i;
@@ -218,12 +228,148 @@ vector<vector<Point> > LaneDetector::centerRoadSide(const vector<Mat> &src, int 
     return res;
 }
 
+// void LaneDetector::detectLeftRight(const vector<vector<Point> > &points)
+// {
+//     static vector<Point> lane1, lane2;
+//     lane1.clear();
+//     lane2.clear();
+
+//     leftLane.clear();
+//     rightLane.clear();
+//     for (int i = 0; i < BIRDVIEW_HEIGHT / slideThickness; i ++)
+//     {
+//         leftLane.push_back(null);
+//         rightLane.push_back(null);
+//     }
+
+//     int pointMap[points.size()][20];
+//     int prePoint[points.size()][20];
+//     int postPoint[points.size()][20];
+//     // int disYPoint[points.size()][20];
+
+//     int disX = 10, disY = 10;
+//     int max = -1, max2 = -1;
+//     Point2i posMax, posMax2;
+
+//     memset(pointMap, 0, sizeof pointMap);
+
+//     for (int i = 0; i < points.size(); i++)
+//     {
+//         for (int j = 0; j < points[i].size(); j++)
+//         {
+//             pointMap[i][j] = 1;
+//             prePoint[i][j] = -1;
+//             postPoint[i][j] = -1;
+//             // disYPoint[i][j] = 0;
+//         }
+//     }
+
+//     for (int i = points.size() - 2; i >= 0; i--)
+//     {
+//         for (int j = 0; j < points[i].size(); j++)
+//         {
+//             int err = 320;
+//             for (int m = 1; m < min(points.size() - 1 - i, 5); m++)
+//             {
+//                 for (int k = 0; k < points[i + 1].size(); k ++)
+//                 {
+//                     if (abs(points[i + m][k].x - points[i][j].x) < disX &&
+//                         abs(points[i + m][k].x - points[i][j].x) < err) {
+//                         err = abs(points[i + m][k].x - points[i][j].x);
+//                         pointMap[i][j] = pointMap[i + m][k] + 1;
+//                         prePoint[i][j] = k;
+//                         postPoint[i + m][k] = j;
+//                         // disYPoint[i][j] = abs(points[i + m][k].y - points[i][j].y);
+//                     }
+//                 }
+//                 break;
+//             }
+
+//             if (pointMap[i][j] > max)
+//             {
+//                 max = pointMap[i][j];
+//                 posMax = Point2i(i, j);
+//             }
+//         }
+//     }
+
+//     for (int i = 0; i < points.size(); i++)
+//     {
+//         for (int j = 0; j < points[i].size(); j++)
+//         {
+//             if (pointMap[i][j] > max2 && (i != posMax.x || j != posMax.y) && postPoint[i][j] == -1)
+//             {
+//                 max2 = pointMap[i][j];
+//                 posMax2 = Point2i(i, j);
+//             }
+//         }
+//     }
+
+//     if (max == -1) return;
+
+//     while (max >= 1)
+//     {
+//         lane1.push_back(points[posMax.x][posMax.y]);
+//         if (max == 1) break;
+
+//         posMax.y = prePoint[posMax.x][posMax.y];
+//         posMax.x += 1;
+
+//         max--;
+//     }
+
+//     while (max2 >= 1)
+//     {
+//         lane2.push_back(points[posMax2.x][posMax2.y]);
+//         if (max2 == 1) break;
+
+//         posMax2.y = prePoint[posMax2.x][posMax2.y];
+//         posMax2.x += 1;
+
+//         max2--;
+//     }
+
+//     vector<Point> subLane1(lane1.begin(), lane1.begin() + 5);
+//     vector<Point> subLane2(lane2.begin(), lane2.begin() + 5);
+
+//     Vec4f line1, line2;
+
+//     fitLine(subLane1, line1, 2, 0, 0.01, 0.01);
+//     fitLine(subLane2, line2, 2, 0, 0.01, 0.01);
+
+//     int lane1X = (BIRDVIEW_WIDTH - line1[3]) * line1[0] / line1[1] + line1[2];
+//     int lane2X = (BIRDVIEW_WIDTH - line2[3]) * line2[0] / line2[1] + line2[2];
+
+//     if (lane1X < lane2X)
+//     {
+//         for (int i = 0; i < lane1.size(); i++)
+//         {
+//             leftLane[floor(lane1[i].y / slideThickness)] = lane1[i];
+//         }
+//         for (int i = 0; i < lane2.size(); i++)
+//         {
+//             rightLane[floor(lane2[i].y / slideThickness)] = lane2[i];
+//         }
+//     }
+//     else
+//     {
+//         for (int i = 0; i < lane2.size(); i++)
+//         {
+//             leftLane[floor(lane2[i].y / slideThickness)] = lane2[i];
+//         }
+//         for (int i = 0; i < lane1.size(); i++)
+//         {
+//             rightLane[floor(lane1[i].y / slideThickness)] = lane1[i];
+//         }
+//     }
+// }
+
 void LaneDetector::detectLeftRight(const vector<vector<Point> > &points)
 {
     static vector<Point> lane1, lane2;
     lane1.clear();
     lane2.clear();
-    
+
     leftLane.clear();
     rightLane.clear();
     for (int i = 0; i < BIRDVIEW_HEIGHT / slideThickness; i ++)
@@ -235,7 +381,8 @@ void LaneDetector::detectLeftRight(const vector<vector<Point> > &points)
     int pointMap[points.size()][20];
     int prePoint[points.size()][20];
     int postPoint[points.size()][20];
-    int dis = 10;
+
+    int disX = 10, disY = 10;
     int max = -1, max2 = -1;
     Point2i posMax, posMax2;
 
@@ -251,6 +398,8 @@ void LaneDetector::detectLeftRight(const vector<vector<Point> > &points)
         }
     }
 
+
+
     for (int i = points.size() - 2; i >= 0; i--)
     {
         for (int j = 0; j < points[i].size(); j++)
@@ -258,22 +407,21 @@ void LaneDetector::detectLeftRight(const vector<vector<Point> > &points)
             int err = 320;
             for (int m = 1; m < min(points.size() - 1 - i, 5); m++)
             {
-                bool check = false;
                 for (int k = 0; k < points[i + 1].size(); k ++)
                 {
-                    if (abs(points[i + m][k].x - points[i][j].x) < dis && 
-                    abs(points[i + m][k].x - points[i][j].x) < err) {
+                    if (abs(points[i + m][k].x - points[i][j].x) < disX &&
+                        abs(points[i + m][k].x - points[i][j].x) < err) {
                         err = abs(points[i + m][k].x - points[i][j].x);
                         pointMap[i][j] = pointMap[i + m][k] + 1;
                         prePoint[i][j] = k;
                         postPoint[i + m][k] = j;
-                        check = true;
+                        // disYPoint[i][j] = abs(points[i + m][k].y - points[i][j].y);
                     }
-                }   
-                break; 
+                }
+                break;
             }
             
-            if (pointMap[i][j] > max) 
+            if (pointMap[i][j] > max)
             {
                 max = pointMap[i][j];
                 posMax = Point2i(i, j);
@@ -301,10 +449,26 @@ void LaneDetector::detectLeftRight(const vector<vector<Point> > &points)
         if (max == 1) break;
 
         posMax.y = prePoint[posMax.x][posMax.y];
-        posMax.x += 1;        
-        
+        posMax.x += 1;
+
         max--;
     }
+
+    // for (int i = 0; i < points.size(); i++)
+    // {
+    //     std::sort(points[i].begin(), points[i].end(), [](const Point& first, const Point& last) -> bool {
+    //         return first.x > last.x;
+    //     });
+
+    //     for (int j = 0; j < points[i].size() - 1; j++)
+    //     {
+    //         if (points[i][j + 1].x - points[i][j].x < disX)
+    //         {
+    //             prePoint[i][j] = 
+    //         }
+            
+    //     }
+    // }
 
     while (max2 >= 1)
     {
@@ -312,11 +476,11 @@ void LaneDetector::detectLeftRight(const vector<vector<Point> > &points)
         if (max2 == 1) break;
 
         posMax2.y = prePoint[posMax2.x][posMax2.y];
-        posMax2.x += 1;        
-        
+        posMax2.x += 1;
+
         max2--;
     }
-    
+
     vector<Point> subLane1(lane1.begin(), lane1.begin() + 5);
     vector<Point> subLane2(lane2.begin(), lane2.begin() + 5);
 
@@ -352,29 +516,6 @@ void LaneDetector::detectLeftRight(const vector<vector<Point> > &points)
     }
 }
 
-// bool LaneDetector::detectLeftRight(const Point& currentPos, const vector<vector<Point> > &points)
-// {
-//     // return true if has sublane
-//     vector<cv::Point> left, right;
-
-//     for (const vector<Point>& sub : points)
-//     {
-//         for (const Point& point : sub)
-//         {
-//             if (point.x < currentPos.x)
-//             {
-//                 left.push_back(point);
-//             } else
-//             {
-//                 right.push_back(point);
-//             }
-//         }
-//     }
-
-
-    
-
-// }
 
 Mat LaneDetector::birdViewTranform(const Mat &src)
 {

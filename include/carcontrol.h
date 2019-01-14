@@ -33,11 +33,18 @@ public:
     ~CarControl();
     void receiveCommand(CommandId commandId);
     void driverCar(cv::Mat image);
-    void driverCar(const vector<Point> &left, const vector<Point> &right, float velocity);
-    void doCommand(const vector<Point> &left, const vector<Point> &right, float velocity);
 
 private:
+    void turnLeft(cv::Mat image, float& error, float& velocity);
+    void turnRight(cv::Mat image, float& error, float& velocity);
+    void forward(cv::Mat image, float& error, float& velocity);
+
+
+
     float errorAngle(const Point &dst);
+
+
+private:
     ros::NodeHandle node_obj1;
     ros::NodeHandle node_obj2;
     
@@ -46,14 +53,16 @@ private:
 
     Point carPos;
 
-    float laneWidth = 40;
+    float laneWidth = 50;
 
+    float lastVelocity = 40;
     float minVelocity = 10;
     float maxVelocity = 50;
 
     float preError;
 
     int commandId;
+    bool isTurning;
     LaneDetector* laneDetector;
     SignDetector* signDetector;
 };

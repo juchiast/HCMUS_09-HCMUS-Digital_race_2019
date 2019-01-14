@@ -1,6 +1,13 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 
+enum TrafficSign
+{
+    Slow = 0,
+    Left = 1,
+    Right = 2
+};
+
 class SignDetector
 {
 public:
@@ -9,6 +16,7 @@ public:
 
     bool detect(cv::Mat frame);
     void visualize(cv::Mat frame);
+    TrafficSign getTrafficSign();
 private:
     void loadTrainingImgs(const char* dirname, int label, cv::Size size, std::vector<cv::Mat> & trainImgs, std::vector<int> &trainLabels);
     void loadTrainingImgs(std::vector<cv::Mat> &trainImgs, std::vector<int> &trainLabels);

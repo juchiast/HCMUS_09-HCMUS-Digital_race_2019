@@ -46,23 +46,16 @@ cv::Mat SignDetector::deNoise(cv::Mat inputImage) {
     return output;
 }
 
-std::vector<cv::Mat> SignDetector::MSER_Features(cv::Mat img) {
-    cv::Mat hsvImg;
-    cv::Mat binary;
+std::vector<cv::Mat> SignDetector::MSER_Features(cv::Mat binary_img) {
     cv::Mat detection;
     cv::Size size(64, 64);
     std::vector<cv::Mat> detections;
 
-    cv::cvtColor(img, hsvImg, cv::COLOR_BGR2HSV);
-    cv::inRange(hsvImg, cv::Scalar(160/2.0, 150,  100), cv::Scalar(210/2.0, 255, 255), binary);
-    
-    // cv::imshow("binary", binary);
-
-    cv::Ptr<cv::MSER> ms = cv::MSER::create(5, 300, 500, 0.9,
-        0.1, 200, 1.01, 0.1, 1);
+    // cv::Ptr<cv::MSER> ms = cv::MSER::create(5, 64, 500, 0.9, 0.1, 200, 1.01, 0.1, 1);
+    cv::Ptr<cv::MSER> ms = cv::MSER::create();
     std::vector<std::vector<cv::Point> > regions;
     std::vector<cv::Rect> mser_bbox;
-    ms->detectRegions(binary, regions, mser_bbox);
+    ms->detectRegions(binary_img, regions, mser_bbox);
 
     // For every bounding box in the image
     for (cv::Rect i : mser_bbox) {
@@ -72,7 +65,7 @@ std::vector<cv::Mat> SignDetector::MSER_Features(cv::Mat img) {
 
         if (ratio > 0.8 && ratio < 1.2) {
             // Crop bounding boxes to get new images
-            detection = img(i);
+            detection = binary_img(i);
 
             // Resize images  to fit the trained data
             cv::resize(detection, detection, size);
@@ -202,11 +195,54 @@ bool SignDetector::detect(cv::Mat frame)
 {
     CV_Assert(!frame.empty());
 
+    this->traffic_sign = 0;
+
     // Denoise image with gaussian blur
     cv::Mat img_denoise = deNoise(frame);
 
+    cv::Mat hsvImg;
+    cv::cvtColor(frame, hsvImg, cv::COLOR_BGR2HSV);
+
+    cv::Mat binary;
+    cv::inRange(hsvImg, cv::Scalar(160/2.0, 150,  100), cv::Scalar(210/2.0, 255, 255), binary);
+    // cv::imshow("binary", binary);
+
+    std::vector<std::vector<cv::Point> > cnts;
+    std::vector<cv::Vec4i> hierarchy;
+    cv::findContours(binary, cnts, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+
+    if (cnts.empty())
+    {
+        return false;
+    }
+
+    bool flag_found = false;
+
+    for (std::vector<cv::Point> cnt : cnts)
+    {
+        double area = cv::contourArea(cnt);
+        if (area > 40)
+        {
+            flag_found = true;
+            break;
+        }
+    }
+
+    if (!flag_found)
+    {
+        return false;
+    }
+
+    // cv::Mat imCnt = cv::Mat::zeros(frame.rows, frame.cols, CV_8UC3);
+    // cv::drawContours(imCnt, cnts, -1, cv::Scalar(0,255,0), 2, 8, hierarchy, 0, cv::Point());
+    // cv::imshow("contours", imCnt);
+
+
+
+
     // Get the detections using MSER
-    std::vector<cv::Mat> imgs_mser = MSER_Features(frame);
+    // std::vector<cv::Mat> imgs_mser = MSER_Features(frame);
+    std::vector<cv::Mat> imgs_mser = MSER_Features(binary);
 
     // If there are detection in the frame:
     if (imgs_mser.size() != 0) {
@@ -219,5 +255,11 @@ bool SignDetector::detect(cv::Mat frame)
         imgs_mser.clear();
     }
 
-    return imgs_mser.size() != 0;
+    return true; // even though nothing found, but should slow the car for attention
+}
+
+TrafficSign SignDetector::getTrafficSign()
+{
+    int trafficSignInt = static_cast<int>(traffic_sign);
+    return TrafficSign(trafficSignInt);
 }

@@ -10,20 +10,41 @@
 #include <vector>
 #include <math.h>
 
-#include "detectlane.h"
 
 using namespace std;
 using namespace cv;
+
+class LaneDetector;
+class SignDetector;
+
+enum CommandId
+{
+    None = 0,
+    TurnRight = 1,
+    TurnLeft = 2,
+    Stop = 3,           // Test only
+    Continue = 4        // Test only
+};
 
 class CarControl 
 {
 public:
     CarControl();
     ~CarControl();
-    void driverCar(const vector<Point> &left, const vector<Point> &right, float velocity);
+    void receiveCommand(CommandId commandId);
+    void driverCar(cv::Mat image);
 
 private:
+    void turnLeft(cv::Mat image, float& error, float& velocity);
+    void turnRight(cv::Mat image, float& error, float& velocity);
+    void forward(cv::Mat image, float& error, float& velocity);
+
+
+
     float errorAngle(const Point &dst);
+
+
+private:
     ros::NodeHandle node_obj1;
     ros::NodeHandle node_obj2;
     
@@ -32,20 +53,18 @@ private:
 
     Point carPos;
 
-    float laneWidth = 40;
+    float laneWidth = 50;
 
+    float lastVelocity = 40;
     float minVelocity = 10;
     float maxVelocity = 50;
 
     float preError;
 
-    float kP;
-    float kI;
-    float kD;
-
-    int t_kP;
-    int t_kI;
-    int t_kD;
+    int commandId;
+    bool isTurning;
+    LaneDetector* laneDetector;
+    SignDetector* signDetector;
 };
 
 #endif

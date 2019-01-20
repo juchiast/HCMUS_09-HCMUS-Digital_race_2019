@@ -66,7 +66,8 @@ cv.createTrackbar(high_S_name, window_detection_name , high_S, max_value, on_hig
 cv.createTrackbar(low_V_name, window_detection_name , low_V, max_value, on_low_V_thresh_trackbar)
 cv.createTrackbar(high_V_name, window_detection_name , high_V, max_value, on_high_V_thresh_trackbar)
 
-frame = cv.imread("image.jpg", cv.IMREAD_COLOR)
+filepath = "image.jpg"
+frame = cv.imread(filepath, cv.IMREAD_COLOR)
 frame_HSV = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
 while True:

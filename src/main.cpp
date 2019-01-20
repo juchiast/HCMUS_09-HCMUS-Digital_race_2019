@@ -22,6 +22,15 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     try
     {
         cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+        int key = cv::waitKey(1);
+        if (key == 'c' || key == 'C') {
+            const std::string time = std::to_string(ros::Time::now().toNSec());
+            const std::string name = "./capture_" + time + ".jpg";
+            bool flag = cv::imwrite(name, cv_ptr->image);
+            if (flag) {
+                ROS_INFO("Capture: %s", name.c_str());
+            }
+        }
         car->driverCar(cv_ptr->image);
     }
     catch (cv_bridge::Exception& e)
@@ -44,34 +53,14 @@ void carCallback(const std_msgs::String& msg)
     }
 }
 
-// void videoProcess()
-// {
-//     Mat src;
-//     while (true)
-//     {
-//         capture >> src;
-//         if (src.empty()) break;
-        
-//         //imshow("View", src);
-//         detect->update(src);
-//         waitKey(30);
-//     }
-// }
-
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "image_listener");
     cv::namedWindow("View");
-    // cv::namedWindow("Binary");
-    // cv::namedWindow("Threshold");
-    // cv::namedWindow("Bird View");
-    // cv::namedWindow("Lane Detect");
 
     car = new CarControl();
 
     if (STREAM) {
-        // cv::startWindowThread();
-
         ros::NodeHandle nh;
         image_transport::ImageTransport it(nh);
         image_transport::Subscriber sub = it.subscribe("team405_image", 1, imageCallback);
@@ -79,8 +68,6 @@ int main(int argc, char **argv)
         ros::Subscriber carSubcriber = nh.subscribe("team405_control", 10, carCallback);
 
         ros::spin();
-    } else {
-        // videoProcess();
     }
     cv::destroyAllWindows();
 }

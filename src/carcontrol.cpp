@@ -47,22 +47,22 @@ void CarControl::driverCar(cv::Mat image)
     float error = 0;
     float velocity = this->lastVelocity;
 
-    if (signDetector->detect(image)) {
-        TrafficSign sign = signDetector->getTrafficSign();
+    // if (signDetector->detect(image)) {
+        // TrafficSign sign = signDetector->getTrafficSign();
 
-        if (sign == TrafficSign::Left) {
-            this->turnLeft(image, error, velocity);
-        } else if (sign == TrafficSign::Right) {
-            this->turnRight(image, error, velocity);
-        } else if (sign == 0) {
-            velocity = 10; // slow down
-            this->forward(image, error, velocity);
-        }
-        signDetector->visualize(image);
-    } else {
+        // if (sign == TrafficSign::Left) {
+            // this->turnLeft(image, error, velocity);
+        // } else if (sign == TrafficSign::Right) {
+            // this->turnRight(image, error, velocity);
+        // } else if (sign == 0) {
+            // velocity = 10; // slow down
+            // this->forward(image, error, velocity);
+        // }
+        // signDetector->visualize(image);
+    // } else {
         velocity = 50;
         this->forward(image, error, velocity);
-    }
+    // }
 
     std_msgs::Float32 angle;
     std_msgs::Float32 speed;

@@ -5,15 +5,13 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include "std_msgs/String.h"
+#include <team405/Sign.h>
+#include <mutex>
 
 #include "carcontrol.h"
+#include "utils.h"
 
-
-bool STREAM = true;
-
-VideoCapture capture("video.avi");
 CarControl *car;
-int skipFrame = 1;
 
 void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
@@ -24,12 +22,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
         cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
         int key = cv::waitKey(1);
         if (key == 'c' || key == 'C') {
-            const std::string time = std::to_string(ros::Time::now().toNSec());
-            const std::string name = "./capture_" + time + ".jpg";
-            bool flag = cv::imwrite(name, cv_ptr->image);
-            if (flag) {
-                ROS_INFO("Capture: %s", name.c_str());
-            }
+            captureImage(cv_ptr->image);
         }
         car->driverCar(cv_ptr->image);
     }
@@ -37,6 +30,11 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     {
         ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
     }
+}
+
+void signCallback(const team405::Sign& signMsg)
+{
+    
 }
 
 void carCallback(const std_msgs::String& msg)
@@ -60,14 +58,12 @@ int main(int argc, char **argv)
 
     car = new CarControl();
 
-    if (STREAM) {
-        ros::NodeHandle nh;
-        image_transport::ImageTransport it(nh);
-        image_transport::Subscriber sub = it.subscribe("team405_image", 1, imageCallback);
+    ros::NodeHandle nh;
+    image_transport::ImageTransport it(nh);
+    image_transport::Subscriber sub = it.subscribe("team405_image", 1, imageCallback);
 
-        ros::Subscriber carSubcriber = nh.subscribe("team405_control", 10, carCallback);
+    ros::Subscriber carSubcriber = nh.subscribe("team405_control", 10, carCallback);
 
-        ros::spin();
-    }
+    ros::spin();
     cv::destroyAllWindows();
 }

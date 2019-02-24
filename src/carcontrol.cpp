@@ -1,6 +1,7 @@
 #include "carcontrol.h"
 #include "lanedetector.h"
 #include "signdetector.h"
+#include "topics.h"
 
 CarControl::CarControl()
 {
@@ -10,8 +11,8 @@ CarControl::CarControl()
     commandId = 0;
     carPos.x = 120;
     carPos.y = 300;
-    steer_publisher = node_obj1.advertise<std_msgs::Float32>("team405_steerAngle",10);
-    speed_publisher = node_obj2.advertise<std_msgs::Float32>("team405_speed",10);
+    steer_publisher = node_obj1.advertise<std_msgs::Float32>(TOPIC_SET_STEER,10);
+    speed_publisher = node_obj2.advertise<std_msgs::Float32>(TOPIC_SET_SPEED,10);
 }
 
 CarControl::~CarControl() 

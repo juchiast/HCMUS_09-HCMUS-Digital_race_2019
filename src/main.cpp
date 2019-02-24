@@ -5,7 +5,7 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include "std_msgs/String.h"
-
+#include "topics.h"
 #include "carcontrol.h"
 
 
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
     if (STREAM) {
         ros::NodeHandle nh;
         image_transport::ImageTransport it(nh);
-        image_transport::Subscriber sub = it.subscribe("team405_image", 1, imageCallback);
+        image_transport::Subscriber sub = it.subscribe(TOPIC_RGB_IMAGE, 1, imageCallback);
 
         ros::Subscriber carSubcriber = nh.subscribe("team405_control", 10, carCallback);
 

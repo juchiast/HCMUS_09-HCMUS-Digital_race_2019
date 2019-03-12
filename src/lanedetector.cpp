@@ -1,4 +1,7 @@
 #include "lanedetector.h"
+#include <opencv2/imgproc.hpp>
+#include <algorithm>
+#include <cmath>
 
 int min(int a, int b)
 {
@@ -37,51 +40,31 @@ vector<Point> LaneDetector::getRightLane()
     return rightLane;
 }
 
-void LaneDetector::update(int priority, const Mat &src)
+void LaneDetector::detect(Mat src)
 {
     // priority == 1: left, 2: right, 0: forward
     Mat img = preProcess(src);
     vector<Mat> layersV, layersH;
-    vector<vector<Point> > pointsV, pointsH;
+    vector<vector<Point> > centroidPoints;
 
     layersV = splitLayer(img, VERTICAL);
-    pointsV = centerRoadSide(layersV, VERTICAL);
+    centroidPoints = centerRoadSide(layersV, VERTICAL);
 
-    if (priority != 0)
-    {
-        cv::Mat lane = Mat::zeros(img.size(), CV_8UC3);
-        layersH = splitLayer(img, HORIZONTAL);
-        pointsH = centerRoadSide(layersH, HORIZONTAL);
-
-        detectLeftRight(pointsH);
-    }
-
-    detectLeftRight(pointsV);
+    detectLeftRight(centroidPoints);
 
     Mat birdViewVertical, birdViewHorizontal, lane;
     birdViewVertical = Mat::zeros(img.size(), CV_8UC3);
-    // birdViewHorizontal = Mat::zeros(img.size(), CV_8UC3);
     lane = Mat::zeros(img.size(), CV_8UC3);
 
-    for (int i = 0; i < pointsV.size(); i++)
+    for (int i = 0; i < centroidPoints.size(); i++)
      {
-        for (int j = 0; j < pointsV[i].size(); j++)
+        for (int j = 0; j < centroidPoints[i].size(); j++)
         {
-            circle(birdViewVertical, pointsV[i][j], 1, Scalar(0,0,255), 2, 8, 0 );
+            circle(birdViewVertical, centroidPoints[i][j], 1, Scalar(0,0,255), 2, 8, 0 );
         }
     }
 
     imshow("BirdViewVertical", birdViewVertical);
-
-    // for (int i = 0; i < points2.size(); i++)
-    //  {
-    //     for (int j = 0; j < points2[i].size(); j++)
-    //     {
-    //         circle(birdViewHorizontal, points2[i][j], 1, Scalar(0,255,0), 2, 8, 0 );
-    //     }
-    // }
-
-    // imshow("BirdViewHorizontal", birdViewHorizontal);
 
     for (int i = 1; i < leftLane.size(); i++)
     {
@@ -535,11 +518,19 @@ Mat LaneDetector::birdViewTranform(const Mat &src)
     dst_vertices[2] = Point(BIRDVIEW_WIDTH - 105, BIRDVIEW_HEIGHT);
     dst_vertices[3] = Point(105, BIRDVIEW_HEIGHT);
 
-    Mat M = getPerspectiveTransform(src_vertices, dst_vertices);
+    M = getPerspectiveTransform(src_vertices, dst_vertices);
+    invM = M.inv();
 
-    Mat dst(BIRDVIEW_HEIGHT, BIRDVIEW_WIDTH, CV_8UC3);
-    warpPerspective(src, dst, M, dst.size(), INTER_LINEAR, BORDER_CONSTANT);
+    topViewFrame = cv::Mat::zeros(BIRDVIEW_HEIGHT, BIRDVIEW_WIDTH, CV_8UC3);
+    warpPerspective(src, topViewFrame, M, topViewFrame.size(), INTER_LINEAR, BORDER_CONSTANT);
 
-    return dst;
+    return topViewFrame;
+}
+
+Mat LaneDetector::invertBirdViewTransform(const Mat& birdview)
+{
+    cv::Mat normalView = cv::Mat::zeros(BIRDVIEW_HEIGHT, BIRDVIEW_WIDTH, CV_8UC3);
+    warpPerspective(birdview, normalView, invM, topViewFrame.size(), INTER_LINEAR, BORDER_CONSTANT);
+    return normalView;
 }
 

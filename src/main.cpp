@@ -5,24 +5,20 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include "std_msgs/String.h"
+#include "std_msgs/Bool.h"
 
 #include "carcontrol.h"
 
 
-bool STREAM = true;
+CarControl* car = nullptr;
 
-VideoCapture capture("video.avi");
-CarControl *car;
-int skipFrame = 1;
-
-void imageCallback(const sensor_msgs::ImageConstPtr& msg)
+static void colorImageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
     cv_bridge::CvImagePtr cv_ptr;
-    Mat out;
     try
     {
         cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-        car->driverCar(cv_ptr->image);
+        car->drive(cv_ptr->image);
     }
     catch (cv_bridge::Exception& e)
     {
@@ -30,57 +26,39 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     }
 }
 
-void carCallback(const std_msgs::String& msg)
+static void distanceSensorCallback(const std_msgs::Bool& msg)
 {
-    const char* str = msg.data.c_str();
-    if (strcmp(str, "R") == 0){
-        car->receiveCommand(CommandId::TurnRight);
-    } else if (strcmp(str, "L") == 0) {
-        car->receiveCommand(CommandId::TurnLeft);
-    } else if (strcmp(str, "C") == 0) {
-        car->receiveCommand(CommandId::Continue);
-    } else if (strcmp(str, "S") == 0) {
-        car->receiveCommand(CommandId::Stop);
+    if (msg.data == false) {
+        car->stop();
     }
 }
 
-// void videoProcess()
-// {
-//     Mat src;
-//     while (true)
-//     {
-//         capture >> src;
-//         if (src.empty()) break;
-        
-//         //imshow("View", src);
-//         detect->update(src);
-//         waitKey(30);
-//     }
-// }
+static std::string getTopicValue(ros::NodeHandle& nodeHandle, const std::string& name, const std::string& defaultVal)
+{
+    std::string res = defaultVal;
+    if (!nodeHandle.getParam(name, res))
+    {
+        ROS_INFO("Not found param [%s], use default = [%s]", name.c_str(), defaultVal.c_str());
+    }
+    return res;
+}
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "image_listener");
-    cv::namedWindow("View");
-    // cv::namedWindow("Binary");
-    // cv::namedWindow("Threshold");
-    // cv::namedWindow("Bird View");
-    // cv::namedWindow("Lane Detect");
+    ros::init(argc, argv, "team405");
 
     car = new CarControl();
 
-    if (STREAM) {
-        // cv::startWindowThread();
+    ros::NodeHandle nh;
 
-        ros::NodeHandle nh;
-        image_transport::ImageTransport it(nh);
-        image_transport::Subscriber sub = it.subscribe("team405_image", 1, imageCallback);
+    image_transport::ImageTransport it(nh);
+    std::string topicColorCamera = getTopicValue(nh, "camera_rgb", "/camera/rgb/image_raw");
+    image_transport::Subscriber sub = it.subscribe(topicColorCamera, 1, colorImageCallback);
 
-        ros::Subscriber carSubcriber = nh.subscribe("team405_control", 10, carCallback);
 
-        ros::spin();
-    } else {
-        // videoProcess();
-    }
+    ros::spin();
+
+    car->stop();
+    delete car;
     cv::destroyAllWindows();
 }

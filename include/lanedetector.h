@@ -1,14 +1,8 @@
 #ifndef DETECTLANE_H
 #define DETECTLANE_H
 
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
-
-#include <ros/ros.h>
 #include <vector>
-#include <math.h>
-#include <algorithm>
 
 using namespace std;
 using namespace cv;
@@ -19,7 +13,7 @@ public:
     LaneDetector();
     ~LaneDetector();
 
-    void update(int priority, const Mat &src);
+    void detect(cv::Mat src);
     
     vector<Point> getLeftLane();
     vector<Point> getRightLane();
@@ -58,6 +52,10 @@ private:
     int shadowParam = 40;
 
     vector<Point> leftLane, rightLane;
+
+    // Invert Perspective Transform frame & params
+    Mat invertBirdViewTransform(const Mat& birdview);
+    cv::Mat topViewFrame, M, invM;
 };
 
 #endif

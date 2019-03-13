@@ -1,15 +1,9 @@
 #ifndef CARCONTROL_H
 #define CARCONTROL_H
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+
 #include <opencv2/opencv.hpp>
-
 #include <ros/ros.h>
-#include "std_msgs/Float32.h"
-
 #include <vector>
-#include <math.h>
-
 
 using namespace std;
 using namespace cv;
@@ -31,18 +25,22 @@ class CarControl
 public:
     CarControl();
     ~CarControl();
-    void receiveCommand(CommandId commandId);
-    void driverCar(cv::Mat image);
+
+    void stop();
+
+    void drive(cv::Mat image);
+
 
 private:
+
     void turnLeft(cv::Mat image, float& error, float& velocity);
     void turnRight(cv::Mat image, float& error, float& velocity);
     void forward(cv::Mat image, float& error, float& velocity);
 
-
-
     float errorAngle(const Point &dst);
 
+    void publishSpeed(const float& velocity);
+    void publishSteer(const float& angle);
 
 private:
     ros::NodeHandle node_obj1;
@@ -55,16 +53,18 @@ private:
 
     float laneWidth = 50;
 
-    float lastVelocity = 40;
-    float minVelocity = 10;
+    float lastVelocity = 10;
+    float minVelocity = 5;
     float maxVelocity = 50;
 
     float preError;
 
-    int commandId;
-    bool isTurning;
+    bool isTurnable; // whether the car can turn even it detected & recognized sign
+
     LaneDetector* laneDetector;
     SignDetector* signDetector;
+
+    cv::Mat currentFrameRaw;
 };
 
 #endif

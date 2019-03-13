@@ -2,16 +2,18 @@
 #include "lanedetector.h"
 #include "signdetector.h"
 
+#include <std_msgs/Float32.h>
+#include <cmath>
+
+
 CarControl::CarControl()
 {
-    isTurning = false;
     laneDetector = new LaneDetector();
     signDetector = new SignDetector();
-    commandId = 0;
     carPos.x = 120;
     carPos.y = 300;
-    steer_publisher = node_obj1.advertise<std_msgs::Float32>("team405_steerAngle",10);
-    speed_publisher = node_obj2.advertise<std_msgs::Float32>("team405_speed",10);
+    steer_publisher = node_obj1.advertise<std_msgs::Float32>("/set_speed_car_api", 10);
+    speed_publisher = node_obj2.advertise<std_msgs::Float32>("/set_steer_car_api", 10);
 }
 
 CarControl::~CarControl() 
@@ -31,59 +33,50 @@ float CarControl::errorAngle(const Point &dst)
     return atan(dx / dy) * 180 / pi;
 }
 
-void CarControl::receiveCommand(CommandId cmdId)
-{
-    if (cmdId == CommandId::Stop)
-    {
-        this->lastVelocity = 0;
-    } else if (cmdId == CommandId::Continue)
-    {
-        this->lastVelocity = 50;
-    }
-}
-
-void CarControl::driverCar(cv::Mat image)
+void CarControl::drive(cv::Mat image)
 {
     float error = 0;
     float velocity = this->lastVelocity;
 
-    if (signDetector->detect(image)) {
-        TrafficSign sign = signDetector->getTrafficSign();
+    laneDetector->detect(image);
+    signDetector->detect(image);
 
-        if (sign == TrafficSign::Left) {
-            this->turnLeft(image, error, velocity);
-        } else if (sign == TrafficSign::Right) {
-            this->turnRight(image, error, velocity);
-        } else if (sign == 0) {
-            velocity = 10; // slow down
-            this->forward(image, error, velocity);
-        }
+    auto&& signs = signDetector->getDetections();
+    if (signs.size() > 0)
+    {
         signDetector->visualize(image);
+        // find max conf
+        // auto&& maxConfIter = std::max_element(signs.begin(), signs.end(), [](const Sign& a, const Sign& b) -> bool {
+        //     return (a.confident > b.confident);
+        // });
+
+        // int sign = maxConfIter->id;
+
+        // if (sign == TrafficSign::Left) {
+        //     this->turnLeft(image, error, velocity);
+        // } else if (sign == TrafficSign::Right) {
+        //     this->turnRight(image, error, velocity);
+        // } else if (sign == 0) {
+        //     velocity = 10; // slow down
+            this->forward(image, error, velocity);
+        // }
     } else {
         velocity = 50;
         this->forward(image, error, velocity);
     }
 
-    std_msgs::Float32 angle;
-    std_msgs::Float32 speed;
+    publishSpeed(velocity);
+    publishSteer(error);
 
-    angle.data = error;
-    speed.data = velocity;
+   cv::waitKey(1);
 
-    steer_publisher.publish(angle);
-    speed_publisher.publish(speed);   
-
-    lastVelocity = velocity;
-
-    cv::imshow("View", image);
-    cv::waitKey(1);
 }
 
 void CarControl::turnRight(cv::Mat image, float& error, float& velocity)
 {
     velocity = 10;
 
-    laneDetector->update(1, image);
+    laneDetector->detect(image);
     std::vector<cv::Point> left, right;
 
     left = laneDetector->getLeftLane();
@@ -102,7 +95,7 @@ void CarControl::turnRight(cv::Mat image, float& error, float& velocity)
 void CarControl::turnLeft(cv::Mat image, float& error, float& velocity)
 {
     velocity = 10;
-    laneDetector->update(2, image);
+    laneDetector->detect(image);
     std::vector<cv::Point> left, right;
 
     left = laneDetector->getLeftLane();
@@ -119,7 +112,7 @@ void CarControl::turnLeft(cv::Mat image, float& error, float& velocity)
 
 void CarControl::forward(cv::Mat image, float& error, float& velocity)
 {
-    laneDetector->update(0, image);
+    laneDetector->detect(image);
     std::vector<cv::Point> left, right;
 
     left = laneDetector->getLeftLane();
@@ -143,4 +136,24 @@ void CarControl::forward(cv::Mat image, float& error, float& velocity)
     {
         error = errorAngle(right[i] - Point(laneWidth / 2, 0));
     }
+}
+
+void CarControl::stop()
+{
+    publishSpeed(0);
+    publishSteer(0);
+}
+
+void CarControl::publishSpeed(const float& velocity)
+{
+    std_msgs::Float32 speed;
+    speed.data = velocity;
+    speed_publisher.publish(speed);   
+}
+
+void CarControl::publishSteer(const float& angle)
+{
+    std_msgs::Float32 steer;
+    steer.data = angle;
+    steer_publisher.publish(steer);
 }

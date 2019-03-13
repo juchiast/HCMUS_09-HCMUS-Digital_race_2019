@@ -53,11 +53,13 @@ private:
 
     float laneWidth = 50;
 
-    float lastVelocity = 40;
-    float minVelocity = 10;
+    float lastVelocity = 10;
+    float minVelocity = 5;
     float maxVelocity = 50;
 
     float preError;
+
+    bool isTurnable; // whether the car can turn even it detected & recognized sign
 
     LaneDetector* laneDetector;
     SignDetector* signDetector;

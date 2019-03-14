@@ -81,6 +81,7 @@ void LaneDetector::detect(const Mat &src)
     }
 
    imshow("Lane Detect", lane);
+   cv::waitKey(1);
 }
 
 Mat LaneDetector::preProcess(const Mat &src)

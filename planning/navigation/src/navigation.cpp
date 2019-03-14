@@ -2,8 +2,12 @@
 
 using namespace cv;
 
+static cv::Point null = cv::Point{};
+
 Navigation::Navigation()
 {
+    sign = -1;
+    isTurning = false;
     carPos.x = 120;
     carPos.y = 300;
 }
@@ -19,95 +23,96 @@ float Navigation::errorAngle(const Point &dst)
     return atan(dx / dy) * 180 / pi;
 }
 
-void Navigation::update(const Lane& leftLane, const Lane& rightLane, const std::vector<cds_msgs::SignDetected>& signs)
+void Navigation::update(const Lane& leftLane, const Lane& rightLane)
 {
-    this->currentSpeed = 50;
-    this->currentSteer = 0;
+    this->leftLane = leftLane;
+    this->rightLane = rightLane;
+}
+
+void Navigation::update(const cds_msgs::SignDetected& sign)
+{
+    this->sign = sign.id;
 }
     
-float Navigation::getSpeed() const
+float Navigation::getSpeed()
 {
+    if (isTurning)
+    {
+        this->currentSpeed = MIN_VELOCITY;
+    } else 
+    {
+        this->currentSpeed = 30;
+    }
     return this->currentSpeed;
 }
     
-float Navigation::getSteer() const
+float Navigation::getSteer()
 {
+    // if (isTurning)
+    // {
+    //     return this->getSteerTurning();
+    // }
+
+    if (this->sign == LEFT) {
+        turnLeft();
+    } else if (this->sign == RIGHT) {
+        turnRight();
+    } else {
+        forward();
+    }
+    
     return this->currentSteer;
 }
 
-// void Navigation::turnRight(cv::Mat image, float& error, float& velocity)
-// {
-//     velocity = 10;
+float Navigation::getSteerTurning()
+{
+    // TODO: implement steering when turning
+    return 0.0f;
+}
 
-//     laneDetector->update(1, image);
-//     std::vector<cv::Point> left, right;
+void Navigation::turnRight()
+{
+    int i = leftLane.size() - 11;
+    while (i > 0 && leftLane[i] == null) {
+        i--;
+        if (i < 0) return;
+    }
+    currentSteer = errorAngle(leftLane[i] + Point(LANE_WIDTH / 2, 0));
+}
 
-//     left = laneDetector->getLeftLane();
-//     right = laneDetector->getRightLane();
+void Navigation::turnLeft()
+{
+    int i = rightLane.size() - 11;
+    while (i > 0 && rightLane[i] == null) {
+        i--;
+        if (i < 0) return;
+    }
+    currentSteer = errorAngle(rightLane[i] - Point(LANE_WIDTH / 2, 0));
+    // error = errorAngle(right[i] - Point(10, 0));
+}
 
-//     int i = left.size() - 11;
+void Navigation::forward()
+{
+    int i = leftLane.size() - 11;
+    if (i < 0)
+    {
+        return;
+    }
 
-//     while (left[i] == LaneDetector::null) {
-//         i--;
-//         if (i < 0) return;
-//     }
-//     error = errorAngle(left[i] + Point(laneWidth / 2, 0));
-//     // error = errorAngle(left[i] + Point(10, 0));
-
-//     currentSpeed = velocity;
-//     currentSteer = error;
-// }
-
-// void CarControl::turnLeft(cv::Mat image, float& error, float& velocity)
-// {
-//     velocity = 10;
-//     laneDetector->update(2, image);
-//     std::vector<cv::Point> left, right;
-
-//     left = laneDetector->getLeftLane();
-//     right = laneDetector->getRightLane();
-
-//     int i = right.size() - 11;
-//     while (right[i] == LaneDetector::null) {
-//         i--;
-//         if (i < 0) return;
-//     }
-//     error = errorAngle(right[i] - Point(laneWidth / 2, 0));
-//     // error = errorAngle(right[i] - Point(10, 0));
-
-
-//     currentSpeed = velocity;
-//     currentSteer = error;
-// }
-
-// void CarControl::forward(cv::Mat image, float& error, float& velocity)
-// {
-//     laneDetector->update(0, image);
-//     std::vector<cv::Point> left, right;
-
-//     left = laneDetector->getLeftLane();
-//     right = laneDetector->getRightLane();
-
-//     int i = left.size() - 11;
-
-//     while (left[i] == LaneDetector::null && right[i] == LaneDetector::null) {
-//         i--;
-//         if (i < 0) return;
-//     }
-//     if (left[i] != LaneDetector::null && right[i] !=  LaneDetector::null)
-//     {
-//         error = errorAngle((left[i] + right[i]) / 2);
-//     } 
-//     else if (left[i] != LaneDetector::null)
-//     {
-//         error = errorAngle(left[i] + Point(laneWidth / 2, 0));
-//     }
-//     else
-//     {
-//         error = errorAngle(right[i] - Point(laneWidth / 2, 0));
-//     }
-
-
-//     currentSpeed = velocity;
-//     currentSteer = error;
-// }
+    while (leftLane[i] == null && rightLane[i] == null) {
+        i--;
+        if (i < 0) return;
+    }
+    if (leftLane[i] != null && rightLane[i] !=  null)
+    {
+        currentSteer = errorAngle((leftLane[i] + rightLane[i]) / 2);
+    } 
+    else if (leftLane[i] != null)
+    {
+        currentSteer = errorAngle(leftLane[i] + Point(LANE_WIDTH / 2, 0));
+    }
+    else
+    {
+        currentSteer = errorAngle(rightLane[i] - Point(LANE_WIDTH / 2, 0));
+    }
+}

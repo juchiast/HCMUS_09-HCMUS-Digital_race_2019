@@ -1,24 +1,24 @@
 #include <ros/ros.h>
+#include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
+
 #include <message_filters/subscriber.h>
-#include <message_filters/synchronizer.h>
-#include <message_filters/sync_policies/approximate_time.h>
+#include <message_filters/time_synchronizer.h>
+#include <sensor_msgs/Image.h>
 
 #include "cds_msgs/Lane.h"
-#include "cds_msgs/SignDetectedArray.h"
+#include "cds_msgs/SignDetected.h"
 #include "std_msgs/Float32.h"
-
-#include <opencv2/opencv.hpp>
 
 #include "navigation.hpp"
 
+using namespace sensor_msgs;
+
 static std::vector<cv::Point> leftLane, rightLane;
-static std::vector<cds_msgs::SignDetected> signs;
 
 static ros::Publisher speedPublisher, steerPublisher;
 
 static Navigation navigation;
-
-static void perceptionCallback(const cds_msgs::LaneConstPtr& laneMsg, const cds_msgs::SignDetectedArrayConstPtr& signMsg);
 
 void convertLandMarkMsg2Lane(const std::vector<cds_msgs::LandMark>& landmarkMsg, std::vector<cv::Point>& lane)
 {
@@ -44,7 +44,7 @@ static void publishSpeed(float speed)
     speedPublisher.publish(speedMsg);
 }
 
-static void perceptionCallback(const cds_msgs::LaneConstPtr& laneMsg, const cds_msgs::SignDetectedArrayConstPtr& signMsg)
+static void laneCallback(const cds_msgs::LaneConstPtr& laneMsg)
 {
     auto&& msgLeftLane = laneMsg->leftLane;
     auto&& msgRightLane = laneMsg->rightLane;
@@ -52,46 +52,36 @@ static void perceptionCallback(const cds_msgs::LaneConstPtr& laneMsg, const cds_
     convertLandMarkMsg2Lane(msgLeftLane, leftLane);
     convertLandMarkMsg2Lane(msgRightLane, rightLane);
 
-    signs = signMsg->data;
+    navigation.update(leftLane, rightLane);
+}
 
-    navigation.update(leftLane, rightLane, signs);
-
-    publishSpeed(navigation.getSpeed());
-    publishSteer(navigation.getSteer());
+static void signCallback(const cds_msgs::SignDetected& signMsg)
+{
+    navigation.update(signMsg);
 }
 
 int main(int argc, char** argv)
 {
-    using namespace ros;
-    using namespace message_filters;
-    using namespace cds_msgs;
-
     ros::init(argc, argv, "navigation");
 
-    ros::NodeHandle nodeHandle;
+    ros::NodeHandle nh;
 
-    message_filters::Subscriber<cds_msgs::Lane> laneSub(nodeHandle, "/lane_detected", 1);
-    message_filters::Subscriber<cds_msgs::SignDetectedArray> signSub(nodeHandle, "/sign_detected", 1);
+    ros::Subscriber laneSub = nh.subscribe("/lane_detected", 10, laneCallback);
+    ros::Subscriber signSub = nh.subscribe("/sign_detected", 10, signCallback);
 
-    typedef sync_policies::ApproximateTime<Lane, SignDetectedArray> MySyncPolicy;
+    speedPublisher = nh.advertise<std_msgs::Float32>("/set_speed_car_api", 10);
+    steerPublisher = nh.advertise<std_msgs::Float32>("/set_steer_car_api", 10);
 
-    // // ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
+    ros::Rate rate{50};
 
-  // ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
-    Synchronizer sync(MySyncPolicy(10), laneSub, signSub);
-    sync.registerCallback(boost::bind(&perceptionCallback, _1, _2));
+    while (ros::ok())
+    {
+        ros::spinOnce();
 
-    // message_filters::Synchronizer<MySyncPolicy> sync{MySyncPolicy{10}, laneSub, signSub};
-    // sync.registerCallback(std::bind(&perceptionCallback, _1, _2));
-    // sync.registerCallback(&perceptionCallback);
-
-    // ros::Subscriber subLane = nodeHandle.subscribe("/lane_detected", 10, laneCallback);
-    // ros::Subscriber subSign = nodeHandle.subscribe("/sign_detected", 10, laneCallback);
-
-    speedPublisher = nodeHandle.advertise<std_msgs::Float32>("/set_speed_car_api", 10);
-    steerPublisher = nodeHandle.advertise<std_msgs::Float32>("/set_steer_car_api", 10);
-
-    ros::spin();
+        publishSpeed(navigation.getSpeed());
+        publishSteer(navigation.getSteer());
+        rate.sleep();
+    }
 
     return 0;
 }

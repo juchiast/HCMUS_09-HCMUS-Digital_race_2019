@@ -7,7 +7,7 @@
 
 #include "traffic_sign_detector.hpp"
 
-#include "cds_msgs/SignDetectedArray.h"
+#include "cds_msgs/SignDetected.h"
 
 SignDetector signDetector;
 ros::Publisher signPublisher;
@@ -38,16 +38,16 @@ static void visualizeSign(cv::Mat colorImage, const Sign& signObject)
 
 static void visualizeSign(cv::Mat colorImage, const std::vector<Sign>& signObjects)
 {
-    colorImage = cv::Mat::zeros(colorImage.size(), CV_8UC3);
+    cv::Mat visualizeImage = cv::Mat::zeros(colorImage.size(), CV_8UC3);
     for (const Sign& sign : signObjects)
     {
-        visualizeSign(colorImage, sign);
+        visualizeSign(visualizeImage, sign);
     }
-    cv::imshow("Signs", colorImage);
+    cv::imshow("Signs", visualizeImage);
     cv::waitKey(1);
 }
 
-static void convertSignObjectToSignMsg(const Sign& signObject, cds_msgs::SignDetected signMsg)
+static void convertSignObjectToSignMsg(const Sign& signObject, cds_msgs::SignDetected& signMsg)
 {
     signMsg.id = signObject.id;
     signMsg.confident = signObject.confident;
@@ -60,20 +60,29 @@ static void convertSignObjectToSignMsg(const Sign& signObject, cds_msgs::SignDet
 
 static void publishSign()
 {
-    cds_msgs::SignDetectedArray msg;
+    cds_msgs::SignDetected msg;
 
     msg.header.stamp = ros::Time::now();
 
     const std::vector<Sign>&& signs = signDetector.getDetections();
 
-    for (const Sign& sign : signs)
+    if (!signs.empty())
     {
-        cds_msgs::SignDetected signMsg;
-        convertSignObjectToSignMsg(sign, signMsg);
-        msg.data.push_back(signMsg);
-    }
+        float maxConfident = signs[0].confident;
+        size_t maxId = 0;
 
-    signPublisher.publish(msg);
+        for(size_t i = 1; i < signs.size(); i++)
+        {
+            if (signs[i].confident > maxConfident)
+            {
+                maxConfident = signs[i].confident;
+                maxId = i;
+            }
+        }
+
+        convertSignObjectToSignMsg(signs[maxId], msg);
+        signPublisher.publish(msg);
+    }
 }
 
 static void imageCallback(const sensor_msgs::ImageConstPtr& msg)
@@ -82,15 +91,6 @@ static void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     try
     {
         cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-        int key = cv::waitKey(1);
-        if (key == 'c' || key == 'C') {
-            const std::string time = std::to_string(ros::Time::now().toNSec());
-            const std::string name = "./capture_" + time + ".jpg";
-            bool flag = cv::imwrite(name, cv_ptr->image);
-            if (flag) {
-                ROS_INFO("Capture: %s", name.c_str());
-            }
-        }
         signDetector.detect(cv_ptr->image);
         visualizeSign(cv_ptr->image, signDetector.getDetections());
         publishSign();
@@ -115,7 +115,7 @@ int main(int argc, char **argv)
 
     std::string pub_sign_topic;
     nh.param<std::string>("pub_sign_topic", pub_sign_topic, "/sign_detected");
-    signPublisher = nh.advertise<cds_msgs::SignDetectedArray>(pub_sign_topic, 10);
+    signPublisher = nh.advertise<cds_msgs::SignDetected>(pub_sign_topic, 10);
 
     ros::spin();
 

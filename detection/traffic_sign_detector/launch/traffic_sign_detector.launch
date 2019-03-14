@@ -1,6 +1,0 @@
-<launch>
-    <node name="traffic_sign_detector" pkg="traffic_sign_detector" type="traffic_sign_detector_node" output="screen" args="_image_transport:=compressed" cwd="node">
-        <param name="sub_camera_topic" value="/camera/rgb/image_raw" />
-        <param name="pub_sign_topic" value="/sign_detected" />
-    </node>  
-</launch>

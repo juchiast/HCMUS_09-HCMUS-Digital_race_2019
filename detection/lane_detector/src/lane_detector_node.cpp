@@ -42,15 +42,6 @@ static void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     try
     {
         cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-        int key = cv::waitKey(1);
-        if (key == 'c' || key == 'C') {
-            const std::string time = std::to_string(ros::Time::now().toNSec());
-            const std::string name = "./capture_" + time + ".jpg";
-            bool flag = cv::imwrite(name, cv_ptr->image);
-            if (flag) {
-                ROS_INFO("Capture: %s", name.c_str());
-            }
-        }
         laneDetector.detect(cv_ptr->image);
         publishLane();
     }

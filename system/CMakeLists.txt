@@ -11,14 +11,13 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   cds_msgs
-  traffic_sign_detector
-  road_segmentation
-  lane_detector
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
+# find_package(traffic_sign_detector REQUIRED)
+# find_package(road_segmentation REQUIRED)
+# find_package(lane_detector REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed

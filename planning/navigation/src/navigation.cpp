@@ -77,7 +77,7 @@ void Navigation::turnRight()
         i--;
         if (i < 0) return;
     }
-    currentSteer = errorAngle(leftLane[i] + Point(LANE_WIDTH / 2, 0));
+    currentSteer = errorAngle(leftLane[i] + Point(10, 0));
 }
 
 void Navigation::turnLeft()
@@ -87,7 +87,9 @@ void Navigation::turnLeft()
         i--;
         if (i < 0) return;
     }
-    currentSteer = errorAngle(rightLane[i] - Point(LANE_WIDTH / 2, 0));
+    currentSteer = errorAngle(rightLane[i] - Point(10, 0));
+    // currentSteer = errorAngle(rightLane[i] - Point(LANE_WIDTH / 2, 0));
+
     // error = errorAngle(right[i] - Point(10, 0));
 }
 
@@ -109,10 +111,10 @@ void Navigation::forward()
     } 
     else if (leftLane[i] != null)
     {
-        currentSteer = errorAngle(leftLane[i] + Point(LANE_WIDTH / 2, 0));
+        currentSteer = errorAngle(leftLane[i] + Point(10, 0));
     }
     else
     {
-        currentSteer = errorAngle(rightLane[i] - Point(LANE_WIDTH / 2, 0));
+        currentSteer = errorAngle(rightLane[i] - Point(10, 0));
     }
 }

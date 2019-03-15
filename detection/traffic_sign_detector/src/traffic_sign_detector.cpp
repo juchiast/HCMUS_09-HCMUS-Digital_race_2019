@@ -93,9 +93,9 @@ void SignDetector::detect(cv::Mat frame)
         return;
     }
 
-    cv::Mat imCnt = cv::Mat::zeros(frame.rows, frame.cols, CV_8UC3);
-    cv::drawContours(imCnt, cnts, -1, cv::Scalar(0,255,0), 2, 8, hierarchy, 0, cv::Point());
-    cv::imshow("sign contours", imCnt);
+    // cv::Mat imCnt = cv::Mat::zeros(frame.rows, frame.cols, CV_8UC3);
+    // cv::drawContours(imCnt, cnts, -1, cv::Scalar(0,255,0), 2, 8, hierarchy, 0, cv::Point());
+    // cv::imshow("sign contours", imCnt);
 
     // Get the detections using MSER
     std::vector<cv::Mat> imgs_mser = MSER_Features(binary);

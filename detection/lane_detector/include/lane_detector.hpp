@@ -9,6 +9,8 @@
 #include <vector>
 #include <algorithm>
 
+
+
 class LaneDetector
 {
 public:
@@ -32,15 +34,16 @@ public:
 
 private:
     cv::Mat preProcess(const cv::Mat &src);
-
-    cv::Mat morphological(const cv::Mat &imgHSV);
-    cv::Mat birdViewTranform(const cv::Mat &source);
     void fillLane(cv::Mat &src);
-    std::vector<cv::Mat> splitLayer(const cv::Mat &src, int dir = VERTICAL);
-    std::vector<std::vector<cv::Point> > centerRoadSide(const std::vector<cv::Mat> &src, int dir = VERTICAL);
-    // bool detectLeftRight(const cv::Point& currentPos, const std::vector<std::vector<cv::Point> > &cv::Points);
+    cv::Mat birdViewTranform(const cv::Mat &source);
+    std::vector<cv::Mat> splitLayer(const cv::Mat &src);
+
+    std::vector<std::vector<cv::Point> > findLayerCentroids(const std::vector<cv::Mat> &src);
+
     void detectLeftRight(const std::vector<std::vector<cv::Point>>& points);
-    cv::Mat laneInShadow(const cv::Mat &src);
+
+    void visualizeCentroids(cv::Mat visualizeImage, const std::vector<std::vector<cv::Point>>& centroids);
+    void visualizeLanes(cv::Mat visualizeImage);
 
     int minThreshold[3] = {0, 0, 180};
     int maxThreshold[3] = {179, 65, 255}; // 179, 30, 255

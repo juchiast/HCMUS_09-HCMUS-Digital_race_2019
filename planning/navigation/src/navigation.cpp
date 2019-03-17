@@ -48,7 +48,10 @@ void Navigation::update(const TurningFlags &leftTurn, const TurningFlags &rightT
 
 void Navigation::update(const cds_msgs::SignDetected &sign)
 {
-    this->sign = sign.id;
+    if (this->skipFrameCount <= 0)
+    {
+        this->sign = sign.id;
+    }
 }
 
 float Navigation::getSpeed()
@@ -66,7 +69,7 @@ float Navigation::getSpeed()
 
 float Navigation::getSteer()
 {
-    // if (isTurning)
+    // if (isTurning())
     // {
     //     return this->getSteerTurning();
     // }
@@ -89,7 +92,17 @@ float Navigation::getSteer()
 
 float Navigation::getSteerTurning()
 {
-    return 0.0f;
+    float steeringAngle = 0;
+    if (this->sign == LEFT)
+    {
+        steeringAngle = skipFrameCount * 5;
+    }
+    else if (this->sign == RIGHT)
+    {
+        steeringAngle = -skipFrameCount * 5;
+    }
+    skipFrameCount--;
+    return steeringAngle;
 }
 
 void Navigation::turnRight()

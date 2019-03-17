@@ -14,6 +14,8 @@
 class LaneDetector
 {
 public:
+    typedef std::vector<cv::Point> LanePoint;
+
     LaneDetector();
     ~LaneDetector();
 
@@ -43,10 +45,15 @@ private:
     std::vector<std::vector<cv::Point> > findLayerCentroids(const std::vector<cv::Mat> &src);
 
     void detectLeftRight(const std::vector<std::vector<cv::Point>>& points);
-    std::vector<bool> findTurnable(const std::vector<cv::Point>& lane, cv::Mat visualization);
+    std::vector<bool> findTurnable(const LanePoint& lane, cv::Mat visualization);
 
     void visualizeCentroids(cv::Mat visualizeImage, const std::vector<std::vector<cv::Point>>& centroids);
     void visualizeLanes(cv::Mat visualizeImage);
+
+    int countNonNull(const LanePoint& points) const;
+    bool isLaneNull(const LanePoint& points) const;
+    bool isLeftCurve(const LanePoint& points) const;
+    bool isRightCurve(const LanePoint& points) const;
 
     int minThreshold[3] = {0, 0, 180};
     int maxThreshold[3] = {179, 65, 255}; // 179, 30, 255
@@ -59,7 +66,7 @@ private:
     int skyLine = 85;
     int shadowParam = 40;
 
-    std::vector<cv::Point> leftLane, rightLane;
+    LanePoint leftLane, rightLane;
     std::vector<bool> leftTurn, rightTurn;
 };
 

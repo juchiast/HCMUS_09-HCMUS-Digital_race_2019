@@ -333,6 +333,26 @@ void LaneDetector::detectLeftRight(const vector<vector<Point> > &points)
             rightLane[floor(lane1[i].y / slideThickness)] = lane1[i];
         }
     }
+
+    // post processing
+    if (countNonNull(leftLane) < 5)
+    {
+        leftLane = vector<cv::Point>(numPoints, null); // it should mark as lost
+    }
+    if (countNonNull(rightLane) < 5)
+    {
+        rightLane = vector<cv::Point>(numPoints, null);
+    }
+
+    if ((isLaneNull(leftLane) && isRightCurve(rightLane)) || isLaneNull(rightLane) && isLeftCurve(leftLane))
+    {
+        std::swap(leftLane, rightLane);
+    }
+}
+
+bool LaneDetector::isLaneNull(const LanePoint& points) const
+{
+    return countNonNull(points) == 0;
 }
 
 std::vector<bool> LaneDetector::findTurnable(const std::vector<cv::Point>& lane, cv::Mat visualization)
@@ -410,4 +430,81 @@ Mat LaneDetector::birdViewTranform(const Mat &src)
     warpPerspective(src, dst, M, dst.size(), INTER_LINEAR, BORDER_CONSTANT);
 
     return dst;
+}
+
+int LaneDetector::countNonNull(const LanePoint& points) const
+{
+    int count = 0;
+    for (size_t i = 0; i < points.size(); i++)
+    {
+        if (points[i] != null)
+        {
+            count++;
+        }
+    }
+    return count;
+}
+
+bool LaneDetector::isLeftCurve(const LanePoint& points) const
+{
+    int size = countNonNull(points);
+    if (size < 5)
+    {
+        return false;
+    }
+
+    cv::Point prevPoint, curPoint;
+    int countDelta = 0;
+    for (int i = leftLane.size() - 1; i > 0; i--)
+    {
+        if (leftLane[i] != null)
+        {
+            prevPoint = curPoint;
+            curPoint = leftLane[i];
+        }
+        
+        if (curPoint != null && prevPoint != null && (curPoint.x - prevPoint.x) < 0)
+        {
+            countDelta++;
+        }
+    }
+    
+    if (countDelta * 1.0f / size > 0.5)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+bool LaneDetector::isRightCurve(const LanePoint& points) const
+{
+    int size = countNonNull(points);
+    if (size < 5)
+    {
+        return false;
+    }
+
+    cv::Point prevPoint, curPoint;
+    int countDelta = 0;
+    for (int i = leftLane.size() - 1; i > 0; i--)
+    {
+        if (leftLane[i] != null)
+        {
+            prevPoint = curPoint;
+            curPoint = leftLane[i];
+        }
+        
+        if (curPoint != null && prevPoint != null && (curPoint.x - prevPoint.x) < 0)
+        {
+            countDelta++;
+        }
+    }
+    
+    if (countDelta * 1.0f / size > 0.5)
+    {
+        return true;
+    }
+
+    return false;
 }

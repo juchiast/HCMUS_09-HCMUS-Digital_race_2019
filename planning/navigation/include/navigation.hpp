@@ -34,6 +34,7 @@ private:
     Lane leftLane, rightLane;
     TurningFlags leftTurn, rightTurn;
     int sign;
+    int skipFrameCount;
 
     static const int MIN_VELOCITY = 10;
     static const int MAX_VELOCITY = 30;

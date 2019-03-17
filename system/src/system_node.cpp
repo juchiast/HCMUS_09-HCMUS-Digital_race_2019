@@ -1,10 +1,12 @@
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
+#include <cds_msgs/System.h>
 
 static bool btn1Pressed = false;
 static bool btn2Pressed = false;
 static bool btn3Pressed = false;
 static bool btn4Pressed = false;
+static bool distanceSensor = false;
 
 void btn1Callback(const std_msgs::Bool& msg)
 {
@@ -78,9 +80,13 @@ void btn4Callback(const std_msgs::Bool& msg)
 
 void sensorCallback(const std_msgs::Bool& msg)
 {
-    if (msg.data == false)
+    if (msg.data != distanceSensor)
     {
-        // TODO: car move near obstacle
+        distanceSensor = msg.data;
+        
+        cds_msgs::System systemMsg;
+        systemMsg.header.stamp = ros::Time::now();
+        systemMsg.isStop.data = true;
     }
 }
 

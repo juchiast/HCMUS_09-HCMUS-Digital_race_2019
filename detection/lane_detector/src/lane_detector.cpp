@@ -40,6 +40,16 @@ vector<Point> LaneDetector::getRightLane()
     return rightLane;
 }
 
+vector<bool> LaneDetector::getLeftTurn()
+{
+    return leftTurn;
+}
+
+vector<bool> LaneDetector::getRightTurn()
+{
+    return rightTurn;
+}
+
 void LaneDetector::detect(const Mat &src)
 {
     // cv::Mat visualization = cv::Mat::zeros(src.size(), CV_8UC3);
@@ -81,6 +91,11 @@ void LaneDetector::detect(const Mat &src)
 
 
     visualizeLanes(visualization);
+
+
+    leftTurn = findTurnable(leftLane, visualization);
+    rightTurn = findTurnable(rightLane, visualization);
+
 
     cv::imshow("Lane detection", visualization);
     cv::waitKey(1);
@@ -169,7 +184,7 @@ std::vector<std::vector<cv::Point> > LaneDetector::findLayerCentroids(const std:
         for (const auto& contour : contours)
         {
             int area = contourArea(contour, false);
-            if (area > 10) {
+            if (area > 10 && area < 125) {
                 Moments M1 = moments(contour, false);
                 Point2f centroid = Point2f(static_cast<float> (M1.m10 / M1.m00), static_cast<float> (M1.m01 / M1.m00));
                 centroid.y += slideThickness * i;
@@ -192,11 +207,12 @@ void LaneDetector::detectLeftRight(const vector<vector<Point> > &points)
 
     leftLane.clear();
     rightLane.clear();
-    for (int i = 0; i < BIRDVIEW_HEIGHT / slideThickness; i ++)
-    {
-        leftLane.push_back(null);
-        rightLane.push_back(null);
-    }
+
+    int numPoints = BIRDVIEW_HEIGHT / slideThickness;
+    leftLane = vector<cv::Point>(numPoints, null);
+    rightLane = vector<cv::Point>(numPoints, null);
+    leftTurn = vector<bool>(numPoints, false);
+    rightTurn = vector<bool>(numPoints, false);
 
     int pointMap[points.size()][20];
     int prePoint[points.size()][20];
@@ -317,6 +333,22 @@ void LaneDetector::detectLeftRight(const vector<vector<Point> > &points)
             rightLane[floor(lane1[i].y / slideThickness)] = lane1[i];
         }
     }
+}
+
+std::vector<bool> LaneDetector::findTurnable(const std::vector<cv::Point>& lane, cv::Mat visualization)
+{
+    std::vector<bool> result(lane.size(), false);
+    int threshold = 1;
+	for(size_t i = lane.size() - 1; i > 1; i--)
+	{
+		int deltaX = lane[i].x - lane[i+1].x;
+		if (abs(deltaX) > threshold)
+		{
+            result[i] = true;
+			cv::circle(visualization, lane[i], 2, cv::Scalar{0,255,255}, -1);
+		}
+	}
+    return result;
 }
 
 void LaneDetector::visualizeCentroids(cv::Mat visualizeImage, const vector<vector<Point>>& centroids)

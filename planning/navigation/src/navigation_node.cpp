@@ -14,19 +14,29 @@
 
 using namespace sensor_msgs;
 
-static std::vector<cv::Point> leftLane, rightLane;
+static Navigation::Lane leftLane, rightLane;
+static Navigation::TurningFlags leftTurning, rightTurning;
 
 static ros::Publisher speedPublisher, steerPublisher;
 
 static Navigation navigation;
 
-void convertLandMarkMsg2Lane(const std::vector<cds_msgs::LandMark>& landmarkMsg, std::vector<cv::Point>& lane)
+void convertLandMarkMsg2Lane(const std::vector<cds_msgs::LandMark>& landmarkMsg, Navigation::Lane& lane)
 {
     lane.clear();
     for (size_t i = 0; i < landmarkMsg.size(); i++)
     {
         const cds_msgs::LandMark& landmark = landmarkMsg[i];
         lane.push_back(cv::Point{landmark.x, landmark.y});
+    }
+}
+
+void convertTurningMsg2Turning(const std::vector<std_msgs::Bool>& turningMsg, Navigation::TurningFlags& turning)
+{
+    turning.clear();
+    for (const std_msgs::Bool& msg : turningMsg)
+    {
+        turning.push_back(msg.data);
     }
 }
 
@@ -48,11 +58,17 @@ static void laneCallback(const cds_msgs::LaneConstPtr& laneMsg)
 {
     auto&& msgLeftLane = laneMsg->leftLane;
     auto&& msgRightLane = laneMsg->rightLane;
+    auto&& msgLeftTurning = laneMsg->leftTurn;
+    auto&& msgRightTurning = laneMsg->rightTurn;
+
 
     convertLandMarkMsg2Lane(msgLeftLane, leftLane);
     convertLandMarkMsg2Lane(msgRightLane, rightLane);
+    convertTurningMsg2Turning(msgLeftTurning, leftTurning);
+    convertTurningMsg2Turning(msgRightTurning, rightTurning);
 
     navigation.update(leftLane, rightLane);
+    navigation.update(leftTurning, rightTurning);
 }
 
 static void signCallback(const cds_msgs::SignDetected& signMsg)

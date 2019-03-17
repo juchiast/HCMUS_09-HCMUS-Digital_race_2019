@@ -126,6 +126,7 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/traffic_sign_detector.cpp
   src/traffic_sign_detector_node.cpp
+  src/traffic_sign_recognizer.cpp
 )
 
 ## Add cmake target dependencies of the library

@@ -6,14 +6,18 @@
 #include <vector>
 #include <opencv2/core.hpp>
 
-typedef std::vector<cv::Point> Lane;
 
 class Navigation
 {
 public:
+
+    typedef std::vector<cv::Point> Lane;
+    typedef std::vector<bool> TurningFlags;
+
     Navigation();
 
     void update(const Lane& leftLane, const Lane& rightLane);
+    void update(const TurningFlags& leftTurnFlags, const TurningFlags& rightTurnFlags);
     void update(const cds_msgs::SignDetected& sign);
     float getSpeed();
     float getSteer();
@@ -21,17 +25,19 @@ public:
 private:
     float errorAngle(const cv::Point &dst);
     float getSteerTurning();
+    bool isTurning() const;
     void turnLeft();
     void turnRight();
     void forward();
 
 private:
     Lane leftLane, rightLane;
+    TurningFlags leftTurn, rightTurn;
     int sign;
-    bool isTurning;
 
     static const int MIN_VELOCITY = 10;
     static const int MAX_VELOCITY = 30;
+    static const int DEF_VELOCITY = 20;
     static const int LANE_WIDTH = 50;
 
 
@@ -42,7 +48,8 @@ private:
     float currentSpeed;
     float currentSteer;
 
-    cv::Point carPos;
+    static const cv::Point carPos;
+    static const cv::Point distanceNearLaneLine;
 };
 
 

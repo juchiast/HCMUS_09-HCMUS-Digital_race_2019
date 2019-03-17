@@ -1,36 +1,36 @@
+#ifndef TRAFFIC_SIGN_DETECTOR_HPP
+#define TRAFFIC_SIGN_DETECTOR_HPP
+
 #include <opencv2/opencv.hpp>
 #include <vector>
 
-enum TrafficSign
-{
-    Slow = 0,
-    Left = 1,
-    Right = 2
-};
+#include "cds_msgs/SignDetected.h"
+
+class SignRecognizer;
 
 struct Sign
 {
     int id;
-    int x, y, width, height;
+    cv::Rect boundingBox;
     float confident;
 };
 
 class SignDetector
 {
 public:
-    SignDetector();
+    SignDetector(SignRecognizer* recognizer);
     ~SignDetector();
 
+    void toSignMessage(cds_msgs::SignDetected& msg);
     void detect(cv::Mat frame);
-    std::vector<Sign> getDetections() const;
 private:
-    std::vector<cv::Mat> MSER_Features(cv::Mat img);
-
-    TrafficSign recognize(cv::Mat boundingBox);
-
+    // std::vector<cv::Mat> MSER_Features(cv::Mat img);
     cv::Mat deNoise(cv::Mat inputImage);
+    const Sign* getSign() const;
 
 private:
-    std::vector<cv::Rect> boxes;  /// Bounding boxes in the current frame
-    std::vector<Sign> signDetections;
+    std::vector<Sign> signs;
+    SignRecognizer* signRecognizer;
 };
+
+#endif

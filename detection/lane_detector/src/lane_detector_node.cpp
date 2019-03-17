@@ -16,6 +16,8 @@ static void publishLane()
     cds_msgs::Lane msg;
     std::vector<cv::Point> leftLane = laneDetector.getLeftLane();
     std::vector<cv::Point> rightLane = laneDetector.getRightLane();
+    std::vector<bool> leftTurn = laneDetector.getLeftTurn();
+    std::vector<bool> rightTurn = laneDetector.getRightTurn();
 
     for (const cv::Point& point : leftLane)
     {
@@ -31,6 +33,20 @@ static void publishLane()
         landMarkMsg.x = point.x;
         landMarkMsg.y = point.y;
         msg.rightLane.push_back(landMarkMsg);
+    }
+
+    for (auto val : leftTurn)
+    {
+        std_msgs::Bool valMsg;
+        valMsg.data = val;
+        msg.leftTurn.push_back(valMsg);
+    }
+
+    for (auto val : rightTurn)
+    {
+        std_msgs::Bool valMsg;
+        valMsg.data = val;
+        msg.rightTurn.push_back(valMsg);
     }
 
     lanePublisher.publish(msg);

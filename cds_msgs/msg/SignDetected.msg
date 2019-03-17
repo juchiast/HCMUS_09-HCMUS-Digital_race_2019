@@ -1,6 +1,7 @@
 std_msgs/Header header
 
 # Sign id
+# -1: None
 # 0: Slow
 # 1: Left
 # 2: Right

@@ -21,6 +21,8 @@ public:
     
     std::vector<cv::Point> getLeftLane();
     std::vector<cv::Point> getRightLane();
+    std::vector<bool> getLeftTurn();
+    std::vector<bool> getRightTurn();
 
     static int slideThickness;
 
@@ -41,6 +43,7 @@ private:
     std::vector<std::vector<cv::Point> > findLayerCentroids(const std::vector<cv::Mat> &src);
 
     void detectLeftRight(const std::vector<std::vector<cv::Point>>& points);
+    std::vector<bool> findTurnable(const std::vector<cv::Point>& lane, cv::Mat visualization);
 
     void visualizeCentroids(cv::Mat visualizeImage, const std::vector<std::vector<cv::Point>>& centroids);
     void visualizeLanes(cv::Mat visualizeImage);
@@ -57,6 +60,7 @@ private:
     int shadowParam = 40;
 
     std::vector<cv::Point> leftLane, rightLane;
+    std::vector<bool> leftTurn, rightTurn;
 };
 
 #endif

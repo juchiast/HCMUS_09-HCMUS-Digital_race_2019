@@ -1,3 +1,3 @@
 std_msgs/Header header
 
-bool isStop
+std_msgs/Bool isStop

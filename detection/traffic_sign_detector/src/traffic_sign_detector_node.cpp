@@ -10,84 +10,70 @@
 
 #include "cds_msgs/SignDetected.h"
 
+#define VISUALIZE_WIN_NAME "Sign"
+
 SignRecognizer *signRecognizer = nullptr;
 SignDetector *signDetector = nullptr;
 ros::Publisher signPublisher;
 
 TrafficSign prevPublishedSign = TrafficSign::None;
 
-// static void visualizeSign(cv::Mat colorImage, const Sign& signObject)
-// {
-//     // cv::Rect boundingBox{signObject.x, signObject.y, signObject.width, signObject.height};
-//     // cv::Scalar color { 0, 0, 255 };
-//     // cv::rectangle(colorImage, boundingBox, color, 1);
-
-//     // cv::Point textPoint = {signObject.x, signObject.y};
-//     // std::string text;
-//     // if (signObject.id == 0) {
-//     //     text = "Slow";
-//     // } else if (signObject.id == 1) {
-//     //     text = "Left";
-//     // } else {
-//     //     text = "Right";
-//     // }
-//     // text += ":" + std::to_string(signObject.confident);
-//     // cv::Scalar textColor { 255, 255, 0 };
-
-//     // int baseLine = 0;
-//     // cv::Size textSize = cv::getTextSize(text, cv::HersheyFonts::FONT_HERSHEY_COMPLEX, 1, 2, &baseLine);
-//     // // cv::rectangle(colorImage, cv::Rect{signObject.x, signObject.y, textSize.width, textSize.height}, cv::Scalar(255, 0, 0), -1);
-//     // cv::putText(colorImage, text, textPoint, cv::HersheyFonts::FONT_HERSHEY_COMPLEX, 1, textColor, 2);
-
-// }
-
-// static void visualizeSign(cv::Mat colorImage, const std::vector<Sign>& signObjects)
-// {
-//     cv::Mat visualizeImage = cv::Mat::zeros(colorImage.size(), CV_8UC3);
-//     for (const Sign& sign : signObjects)
-//     {
-//         visualizeSign(visualizeImage, sign);
-//     }
-//     cv::imshow("Signs", visualizeImage);
-//     cv::waitKey(1);
-// }
-
-// static void debugSign(const Sign &signObject)
-// {
-//     const char *text;
-//     if (signObject.id == 0)
-//     {
-//         text = "slow";
-//     }
-//     else if (signObject.id == 1)
-//     {
-//         text = "left";
-//     }
-//     else
-//     {
-//         text = "right";
-//     }
-//     ROS_INFO("Sign: %s", text);
-// }
-
-static void publishSign()
+static std::string getSignLabel(const cds_msgs::SignDetected &signMsg)
 {
-    cds_msgs::SignDetected msg;
+    switch (signMsg.id)
+    {
+    case TrafficSign::Left:
+        return "left";
+    case TrafficSign::Right:
+        return "right";
+    case TrafficSign::Slow:
+        return "slow";
+    }
+    return "";
+}
 
+static void visualizeSign(cv::Mat colorImage, const cds_msgs::SignDetected &signMsg)
+{
+    std::string signLabel = getSignLabel(signMsg);
+    int fontface = cv::FONT_HERSHEY_DUPLEX;
+    double scale = 0.5;
+    int thickness = 1;
+    int baseline = 0;
+    int padding = 2;
+    cv::RNG rng(123456);
+    const cv::Scalar backgroundColor(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
+    const cv::Scalar foregroundColor(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
+    const cv::Scalar textColor(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
+
+    cv::Size textSize = cv::getTextSize(signLabel, fontface, scale, thickness, &baseline);
+    // cv::Mat crop = colorImage(cv::Rect{signMsg.x, signMsg.y, signMsg.width, signMsg.height});
+    // cv::Mat visualizeImage = cv::Mat(cv::Size(crop.cols, crop.rows + textSize.height), CV_8UC3);
+    cv::Mat visualizeImage = colorImage.clone();
+
+    cv::Point textPos{signMsg.x, signMsg.y - textSize.height};
+    cv::rectangle(visualizeImage, textPos, textPos + cv::Point(textSize.width + 2 * padding, textSize.height + 2 * padding), backgroundColor, CV_FILLED);
+    cv::rectangle(visualizeImage, textPos, textPos + cv::Point(textSize.width + 2 * padding, textSize.height + 2 * padding), foregroundColor, 1, cv::LineTypes::LINE_4);
+    cv::putText(visualizeImage, signLabel, textPos + cv::Point(padding, padding + baseline * 2), fontface, scale, textColor, thickness, 8);
+
+    cv::imshow(VISUALIZE_WIN_NAME, visualizeImage);
+    cv::waitKey(1);
+}
+
+static void publishSign(cv::Mat image)
+{
+    signDetector->detect(image);
+
+    cds_msgs::SignDetected msg;
     msg.header.stamp = ros::Time::now();
+
     signDetector->toSignMessage(msg);
+    visualizeSign(image, msg);
 
 
     if (!(msg.id == TrafficSign::None && prevPublishedSign == TrafficSign::None))
     {
-        ROS_INFO("Prev Detected: %d, current: %d", static_cast<int>(prevPublishedSign), static_cast<int>(msg.id));
-
         signPublisher.publish(msg);
         prevPublishedSign = static_cast<TrafficSign>(msg.id);
-    }
-    else
-    {
-        // ROS_INFO("Prev Detected: %d, current: %d", static_cast<int>(prevPublishedSign), static_cast<int>(msg.id));
     }
 }
 
@@ -97,10 +83,7 @@ static void imageCallback(const sensor_msgs::ImageConstPtr &msg)
     try
     {
         cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-        signDetector->detect(cv_ptr->image);
-        // visualizeSign(cv_ptr->image, signDetector.getDetections());
-        publishSign();
-        cv::waitKey(1);
+        publishSign(cv_ptr->image);
     }
     catch (cv_bridge::Exception &e)
     {

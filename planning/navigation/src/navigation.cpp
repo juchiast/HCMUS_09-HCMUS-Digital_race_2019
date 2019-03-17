@@ -1,4 +1,5 @@
 #include "navigation.hpp"
+#include <ros/ros.h>
 
 using namespace cv;
 
@@ -88,12 +89,13 @@ float Navigation::getSteer()
 
 float Navigation::getSteerTurning()
 {
-    // TODO: implement steering when turning
     return 0.0f;
 }
 
 void Navigation::turnRight()
 {
+    ROS_INFO("go right");
+
     int i = rightTurn.size() - 5;
     if (i < 0)
     {
@@ -106,27 +108,34 @@ void Navigation::turnRight()
     }
     else
     {
-        currentSteer = errorAngle(rightLane[i] + distanceNearLaneLine);
+        currentSteer = errorAngle(rightLane[i] - distanceNearLaneLine);
     }
 }
 
 void Navigation::turnLeft()
 {
-    int i = leftLane.size() - 5;
-    while (i > 0 && leftLane[i] == null)
-    {
-        i--;
-        if (i < 0)
-            return;
-    }
-    currentSteer = errorAngle(leftLane[i] + distanceNearLaneLine);
-    // currentSteer = errorAngle(rightLane[i] - Point(LANE_WIDTH / 2, 0));
+    ROS_INFO("go left");
 
-    // error = errorAngle(right[i] - distanceNearLaneLine);
+    int i = leftTurn.size() - 5;
+    if (i < 0)
+    {
+        return;
+    }
+
+    if (!leftTurn[i])
+    {
+        forward();
+    }
+    else
+    {
+        currentSteer = errorAngle(leftLane[i] + distanceNearLaneLine);
+    }
+
 }
 
 void Navigation::forward()
 {
+    ROS_INFO("forward");
     int i = leftLane.size() - 5;
     if (i < 0)
     {
@@ -155,5 +164,5 @@ void Navigation::forward()
 
 bool Navigation::isTurning() const
 {
-    return (this->sign == Sign::LEFT || this->sign == Sign::RIGHT);
+    return (this->sign == Sign::SLOW || this->sign == Sign::LEFT || this->sign == Sign::RIGHT);
 }

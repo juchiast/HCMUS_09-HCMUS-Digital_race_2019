@@ -8,8 +8,6 @@
 
 #include <unistd.h>
 
-cv::RNG rng(12345);
-
 SignDetector::SignDetector(SignRecognizer *recognizer)
     : signRecognizer{recognizer}
 {
@@ -27,44 +25,14 @@ cv::Mat SignDetector::deNoise(cv::Mat inputImage)
     return output;
 }
 
-// std::vector<cv::Mat> SignDetector::MSER_Features(cv::Mat binary_img)
-// {
-//     cv::Mat detection;
-//     std::vector<cv::Mat> detections;
-
-//     cv::Ptr<cv::MSER> ms = cv::MSER::create();
-//     std::vector<std::vector<cv::Point>> regions;
-//     std::vector<cv::Rect> mser_bbox;
-//     ms->detectRegions(binary_img, regions, mser_bbox);
-
-//     // For every bounding box in the image
-//     for (cv::Rect i : mser_bbox)
-//     {
-//         // Ratio filter of detected regions
-//         double ratio = (static_cast<double>(i.height) /
-//                         static_cast<double>(i.width));
-
-//         if (ratio > 0.8 && ratio < 1.2)
-//         {
-//             // Crop bounding boxes to get new images
-//             detection = binary_img(i);
-
-//             // Output the vector of images
-//             detections.push_back(detection);
-//             this->boxes.push_back(i);
-//         }
-//     }
-//     return detections;
-// }
-
 void SignDetector::detect(cv::Mat frame)
 {
     signs.clear();
     CV_Assert(!frame.empty());
 
     // Denoise image with gaussian blur
-    // cv::Mat img_denoise = deNoise(frame);
-    cv::Mat img_denoise = frame;
+    cv::Mat img_denoise = deNoise(frame);
+    // cv::Mat img_denoise = frame;
 
     cv::Mat hsvImg;
     cv::cvtColor(frame, hsvImg, cv::COLOR_BGR2HSV);
@@ -84,8 +52,8 @@ void SignDetector::detect(cv::Mat frame)
     std::vector<cv::Rect> boundRect(contours.size());
 
 
-    cv::Mat drawing;
-    cv::cvtColor(binary, drawing, cv::COLOR_GRAY2BGR);
+    // cv::Mat drawing;
+    // cv::cvtColor(binary, drawing, cv::COLOR_GRAY2BGR);
 
     for (size_t i = 0; i < contours.size(); i++)
     {
@@ -110,13 +78,13 @@ void SignDetector::detect(cv::Mat frame)
                 signs.push_back(signObject);
 
                 // visualize bounding box
-                cv::Scalar color(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
-                cv::rectangle(drawing, boundRect[i], color, 2, 8, 0);
+                // cv::Scalar color(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
+                // cv::rectangle(drawing, boundRect[i], color, 2, 8, 0);
             }
         }
     }
 
-    cv::imshow("Drawing....", drawing);
+    // cv::imshow("Drawing....", drawing);
 }
 
 const Sign *SignDetector::getSign() const

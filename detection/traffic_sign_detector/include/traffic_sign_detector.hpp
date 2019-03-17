@@ -24,7 +24,6 @@ public:
     void toSignMessage(cds_msgs::SignDetected& msg);
     void detect(cv::Mat frame);
 private:
-    // std::vector<cv::Mat> MSER_Features(cv::Mat img);
     cv::Mat deNoise(cv::Mat inputImage);
     const Sign* getSign() const;
 

@@ -59,7 +59,7 @@ float Navigation::getSpeed()
     }
     else
     {
-        this->currentSpeed = 30;
+        this->currentSpeed = DEF_VELOCITY;
     }
     return this->currentSpeed;
 }
@@ -94,8 +94,6 @@ float Navigation::getSteerTurning()
 
 void Navigation::turnRight()
 {
-    ROS_INFO("go right");
-
     int i = rightTurn.size() - 5;
     if (i < 0)
     {
@@ -114,8 +112,6 @@ void Navigation::turnRight()
 
 void Navigation::turnLeft()
 {
-    ROS_INFO("go left");
-
     int i = leftTurn.size() - 5;
     if (i < 0)
     {
@@ -130,12 +126,10 @@ void Navigation::turnLeft()
     {
         currentSteer = errorAngle(leftLane[i] + distanceNearLaneLine);
     }
-
 }
 
 void Navigation::forward()
 {
-    ROS_INFO("forward");
     int i = leftLane.size() - 5;
     if (i < 0)
     {
@@ -150,7 +144,16 @@ void Navigation::forward()
     }
     if (leftLane[i] != null && rightLane[i] != null)
     {
-        currentSteer = errorAngle((leftLane[i] + rightLane[i]) / 2);
+        // currentSteer = errorAngle((leftLane[i] + rightLane[i]) / 2);
+        // default is turn right if turnable
+        // if (rightTurn[i])
+        // {
+        //     currentSteer = errorAngle(rightLane[i] - distanceNearLaneLine);
+        // }
+        // else
+        {
+            currentSteer = errorAngle((leftLane[i] + rightLane[i]) / 2);
+        }
     }
     else if (leftLane[i] != null)
     {

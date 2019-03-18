@@ -2,92 +2,35 @@
 #include <std_msgs/Bool.h>
 #include <cds_msgs/System.h>
 
-static bool btn1Pressed = false;
-static bool btn2Pressed = false;
-static bool btn3Pressed = false;
-static bool btn4Pressed = false;
-static bool distanceSensor = false;
+static ros::Publisher publisher;
+static cds_msgs::System systemMsg;
 
 void btn1Callback(const std_msgs::Bool& msg)
 {
-    if (msg.data)
-    {
-        btn1Pressed = true;
-    }
-    else
-    {
-        if (btn1Pressed)
-        {
-            ROS_INFO("btn1 released");
-            // TODO: do somethings when user release btn1
-        }
-        btn1Pressed = false;
-    } 
+    // button 1
 }
 
 void btn2Callback(const std_msgs::Bool& msg)
 {
-    if (msg.data)
-    {
-        btn2Pressed = true;
-    }
-    else
-    {
-        if (btn2Pressed)
-        {
-            ROS_INFO("btn2 released");
-            // TODO: do somethings when user release btn2
-        }
-        btn2Pressed = false;
-    } 
+    // button 2
 }
 
 
 void btn3Callback(const std_msgs::Bool& msg)
 {
-    if (msg.data)
-    {
-        btn3Pressed = true;
-    }
-    else
-    {
-        if (btn3Pressed)
-        {
-            ROS_INFO("btn3 released");
-            // TODO: do somethings when user release btn3
-        }
-        btn3Pressed = false;
-    } 
+    // button 3 
 }
 
 
 void btn4Callback(const std_msgs::Bool& msg)
 {
-    if (msg.data)
-    {
-        btn4Pressed = true;
-    } 
-    else
-    {
-        if (btn4Pressed)
-        {
-            ROS_INFO("btn4 released");
-            // TODO: do somethings when user release btn4
-        }
-        btn4Pressed = false;
-    } 
+    // button 4 
 }
 
 void sensorCallback(const std_msgs::Bool& msg)
 {
-    if (msg.data != distanceSensor)
-    {
-        distanceSensor = msg.data;
-        
-        cds_msgs::System systemMsg;
-        systemMsg.header.stamp = ros::Time::now();
-        systemMsg.isStop.data = true;
-    }
+    // sensor return false if it is activated
+    systemMsg.isStop.data = !msg.data; 
 }
 
 
@@ -104,13 +47,23 @@ int main(int argc, char** argv)
     bt4Topic = nh.param("bt4Topic", std::string("/bt4_status"));
     sensorTopic = nh.param("sensorTopic", std::string("/ss_status"));
 
-    nh.subscribe(bt1Topic, 10, btn1Callback);
-    nh.subscribe(bt2Topic, 10, btn2Callback);
-    nh.subscribe(bt3Topic, 10, btn3Callback);
-    nh.subscribe(bt4Topic, 10, btn4Callback);
+    // We dont need to use buttons now
+    // nh.subscribe(bt1Topic, 10, btn1Callback);
+    // nh.subscribe(bt2Topic, 10, btn2Callback);
+    // nh.subscribe(bt3Topic, 10, btn3Callback);
+    // nh.subscribe(bt4Topic, 10, btn4Callback);
     nh.subscribe(sensorTopic, 10, sensorCallback);
 
-    ros::spin();
+    publisher = nh.advertise<cds_msgs::System>("/system", 10);
+
+    ros::Rate rate{30};
+    while (ros::ok())
+    {
+        systemMsg.header.stamp = ros::Time::now();
+
+        publisher.publish(systemMsg);
+        rate.sleep();
+    }
 
 
     return 0;

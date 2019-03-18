@@ -88,19 +88,25 @@ int main(int argc, char **argv)
     steerPublisher = nh.advertise<std_msgs::Float32>("/set_steer_car_api", 10);
 
     ros::Rate rate{50};
+    float speed, steer;
 
     while (ros::ok())
     {
+        ros::spinOnce();
         if (!isStop)
         {
-            ros::spinOnce();
-
-            float speed = navigation.getSpeed();
-            float steer = navigation.getSteer();
-
-            publishSpeed(speed);
-            publishSteer(steer);
+            speed = navigation.getSpeed();
+            steer = navigation.getSteer();
         }
+        else
+        {
+            speed = 0.0f;
+            steer = 0.0f;
+        }
+
+        publishSpeed(speed);
+        publishSteer(steer);
+
         rate.sleep();
     }
 

@@ -1,0 +1,25 @@
+<launch>
+    <include ns="bridge1" file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+		<arg name="port" value="9090" />
+    </include>
+
+    <node name="traffic_sign_detector" pkg="traffic_sign_detector" type="traffic_sign_detector_node" output="screen" args="_image_transport:=compressed" cwd="node">
+        <param name="sub_camera_topic" value="/camera/rgb/image_raw" />
+        <param name="pub_sign_topic" value="/sign_detected" />
+    </node>  
+
+    <node name="lane_detector" pkg="lane_detector" type="lane_detector_node" output="screen" args="_image_transport:=compressed" cwd="node">
+        <param name="sub_camera_topic" value="/camera/rgb/image_raw" />
+        <param name="pub_lane_topic" value="/lane_detected" />
+    </node>  
+
+    <node name="navigation" pkg="navigation" type="navigation_node" output="screen" cwd="node">
+        <!-- <param name="sub_camera_topic" value="/camera/rgb/image_raw" /> -->
+        <!-- <param name="pub_lane_topic" value="/lane_detected" /> -->
+    </node>  
+
+    <!-- <node name="road_segmentation" pkg="road_segmentation" type="road_segmentation_node" output="screen" args="_image_transport:=compressed" cwd="node">
+        <param name="sub_camera_topic" value="/camera/rgb/image_raw" />
+        <param name="pub_road_topic" value="/road_segmentation/image_raw" />
+    </node>   -->
+</launch>

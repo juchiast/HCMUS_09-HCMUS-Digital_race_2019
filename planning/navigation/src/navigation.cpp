@@ -17,6 +17,7 @@ enum Sign
 
 Navigation::Navigation()
     : sign{-1}, currentSpeed{DEF_VELOCITY}, currentSteer{0.0f}
+    , carDir(0, 1), theta{0.0f}
 {
 }
 
@@ -143,7 +144,7 @@ void Navigation::turnLeft()
 
 void Navigation::forward()
 {
-    int i = leftLane.size() - 5;
+    int i = rightLane.size() - 7;
     if (i < 0)
     {
         return;

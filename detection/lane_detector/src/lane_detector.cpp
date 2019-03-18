@@ -11,6 +11,7 @@ int min(int a, int b)
 int LaneDetector::slideThickness = 10;
 int LaneDetector::BIRDVIEW_WIDTH = 240;
 int LaneDetector::BIRDVIEW_HEIGHT = 320;
+// int LaneDetector::BIRDVIEW_HEIGHT_CROP = 240;
 int LaneDetector::VERTICAL = 0;
 int LaneDetector::HORIZONTAL = 1;
 Point LaneDetector::null = Point();
@@ -52,17 +53,11 @@ vector<bool> LaneDetector::getRightTurn()
 
 void LaneDetector::detect(const Mat &src)
 {
-    // cv::Mat visualization = cv::Mat::zeros(src.size(), CV_8UC3);
-
     Mat img = preProcess(src);
-
-    vector<Mat> planes;
-
-    for(int i=0;i<3;i++)
-        planes.push_back(img);
+    // img = img(cv::Rect(0, BIRDVIEW_HEIGHT - BIRDVIEW_HEIGHT_CROP, BIRDVIEW_WIDTH, BIRDVIEW_HEIGHT_CROP));
 
     cv::Mat visualization;
-    merge(planes, visualization);
+    cv::cvtColor(img, visualization, cv::COLOR_GRAY2BGR);
 
     vector<Mat> layers = splitLayer(img);
     
@@ -70,9 +65,9 @@ void LaneDetector::detect(const Mat &src)
     vector<vector<Point>> centroidPoints = findLayerCentroids(layers);
     visualizeCentroids(visualization, centroidPoints);
 
-    detectLeftRight(centroidPoints);
+    detectLeftRight(visualization, centroidPoints);
 
-    int laneThreshold = 15;
+    int laneThreshold = 5;
     if (leftLane.size() < laneThreshold)
     {
         for (int i = 0; i < leftLane.size(); i++)
@@ -113,6 +108,7 @@ Mat LaneDetector::preProcess(const Mat &src)
         imgThresholded);
 
     dst = birdViewTranform(imgThresholded);
+    // dst = imgThresholded;
 
     fillLane(dst);
 
@@ -199,7 +195,7 @@ std::vector<std::vector<cv::Point> > LaneDetector::findLayerCentroids(const std:
     return res;
 }
 
-void LaneDetector::detectLeftRight(const vector<vector<Point> > &points)
+void LaneDetector::detectLeftRight(cv::Mat visualization, const vector<vector<Point> > &points)
 {
     static vector<Point> lane1, lane2;
     lane1.clear();
@@ -300,16 +296,22 @@ void LaneDetector::detectLeftRight(const vector<vector<Point> > &points)
         max2--;
     }
 
-    vector<Point> subLane1(lane1.begin(), lane1.begin() + 3);
-    vector<Point> subLane2(lane2.begin(), lane2.begin() + 3);
+    vector<Point> subLane1(lane1.end() - 5, lane1.end());
+    vector<Point> subLane2(lane2.end() - 5, lane2.end());
 
     Vec4f line1, line2;
 
     fitLine(subLane1, line1, 2, 0, 0.01, 0.01);
     fitLine(subLane2, line2, 2, 0, 0.01, 0.01);
 
-    int lane1X = (BIRDVIEW_WIDTH - line1[3]) * line1[0] / line1[1] + line1[2];
-    int lane2X = (BIRDVIEW_WIDTH - line2[3]) * line2[0] / line2[1] + line2[2];
+    // std::cout << "Line 1: " << line1 << std::endl;
+    // std::cout << "Line 2: " << line2 << std::endl;
+
+
+    // int lane1X = (BIRDVIEW_WIDTH - line1[3]) * line1[0] / line1[1] + line1[2];
+    // int lane2X = (BIRDVIEW_WIDTH - line2[3]) * line2[0] / line2[1] + line2[2];
+    int lane1X = line1[2];
+    int lane2X = line2[2];
 
     if (lane1X < lane2X)
     {
@@ -335,19 +337,19 @@ void LaneDetector::detectLeftRight(const vector<vector<Point> > &points)
     }
 
     // post processing
-    if (countNonNull(leftLane) < 5)
-    {
-        leftLane = vector<cv::Point>(numPoints, null); // it should mark as lost
-    }
-    if (countNonNull(rightLane) < 5)
-    {
-        rightLane = vector<cv::Point>(numPoints, null);
-    }
+    // if (countNonNull(leftLane) < 5)
+    // {
+    //     leftLane = vector<cv::Point>(numPoints, null); // it should mark as lost
+    // }
+    // if (countNonNull(rightLane) < 5)
+    // {
+    //     rightLane = vector<cv::Point>(numPoints, null);
+    // }
 
-    if ((isLaneNull(leftLane) && isRightCurve(rightLane)) || isLaneNull(rightLane) && isLeftCurve(leftLane))
-    {
-        std::swap(leftLane, rightLane);
-    }
+    // if ((isLaneNull(leftLane) && isRightCurve(rightLane)) || isLaneNull(rightLane) && isLeftCurve(leftLane))
+    // {
+    //     std::swap(leftLane, rightLane);
+    // }
 }
 
 bool LaneDetector::isLaneNull(const LanePoint& points) const
@@ -365,7 +367,7 @@ std::vector<bool> LaneDetector::findTurnable(const std::vector<cv::Point>& lane,
 		if (abs(deltaX) > threshold)
 		{
             result[i] = true;
-			cv::circle(visualization, lane[i], 2, cv::Scalar{0,255,255}, -1);
+			// cv::circle(visualization, lane[i], 2, cv::Scalar{0,255,255}, -1);
 		}
 	}
     return result;
@@ -418,11 +420,17 @@ Mat LaneDetector::birdViewTranform(const Mat &src)
     src_vertices[2] = Point(width, height);
     src_vertices[3] = Point(0, height);
 
+    // Point2f dst_vertices[4];
+    // dst_vertices[0] = Point(0, 0);
+    // dst_vertices[1] = Point(BIRDVIEW_WIDTH, 0);
+    // dst_vertices[2] = Point(BIRDVIEW_WIDTH - 105, BIRDVIEW_HEIGHT);
+    // dst_vertices[3] = Point(105, BIRDVIEW_HEIGHT);
+
     Point2f dst_vertices[4];
     dst_vertices[0] = Point(0, 0);
     dst_vertices[1] = Point(BIRDVIEW_WIDTH, 0);
-    dst_vertices[2] = Point(BIRDVIEW_WIDTH - 105, BIRDVIEW_HEIGHT);
-    dst_vertices[3] = Point(105, BIRDVIEW_HEIGHT);
+    dst_vertices[2] = Point(BIRDVIEW_WIDTH, BIRDVIEW_HEIGHT);
+    dst_vertices[3] = Point(0, BIRDVIEW_HEIGHT);
 
     Mat M = getPerspectiveTransform(src_vertices, dst_vertices);
 

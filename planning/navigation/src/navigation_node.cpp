@@ -94,8 +94,13 @@ int main(int argc, char** argv)
     {
         ros::spinOnce();
 
-        publishSpeed(navigation.getSpeed());
-        publishSteer(navigation.getSteer());
+        float speed = navigation.getSpeed();
+        float steer = navigation.getSteer();
+
+        // navigation.carDir =
+
+        publishSpeed(speed);
+        publishSteer(steer);
         rate.sleep();
     }
 

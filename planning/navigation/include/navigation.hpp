@@ -22,6 +22,10 @@ public:
     float getSpeed();
     float getSteer();
 
+
+    cv::Point carDir;
+    float theta;
+
 private:
     float errorAngle(const cv::Point &dst);
     float getSteerTurning();
@@ -48,6 +52,7 @@ private:
 
     float currentSpeed;
     float currentSteer;
+
 
     static const cv::Point carPos;
     static const cv::Point distanceNearLaneLine;

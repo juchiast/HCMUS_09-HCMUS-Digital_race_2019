@@ -30,6 +30,8 @@ public:
 
     static int BIRDVIEW_WIDTH;
     static int BIRDVIEW_HEIGHT;
+    // static int BIRDVIEW_HEIGHT_CROP;
+
 
     static int VERTICAL;
     static int HORIZONTAL;
@@ -44,7 +46,7 @@ private:
 
     std::vector<std::vector<cv::Point> > findLayerCentroids(const std::vector<cv::Mat> &src);
 
-    void detectLeftRight(const std::vector<std::vector<cv::Point>>& points);
+    void detectLeftRight(cv::Mat visualizeImage, const std::vector<std::vector<cv::Point>>& points);
     std::vector<bool> findTurnable(const LanePoint& lane, cv::Mat visualization);
 
     void visualizeCentroids(cv::Mat visualizeImage, const std::vector<std::vector<cv::Point>>& centroids);

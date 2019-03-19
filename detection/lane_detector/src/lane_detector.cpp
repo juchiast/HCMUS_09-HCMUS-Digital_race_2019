@@ -420,17 +420,17 @@ Mat LaneDetector::birdViewTranform(const Mat &src)
     src_vertices[2] = Point(width, height);
     src_vertices[3] = Point(0, height);
 
-    // Point2f dst_vertices[4];
-    // dst_vertices[0] = Point(0, 0);
-    // dst_vertices[1] = Point(BIRDVIEW_WIDTH, 0);
-    // dst_vertices[2] = Point(BIRDVIEW_WIDTH - 105, BIRDVIEW_HEIGHT);
-    // dst_vertices[3] = Point(105, BIRDVIEW_HEIGHT);
-
     Point2f dst_vertices[4];
     dst_vertices[0] = Point(0, 0);
     dst_vertices[1] = Point(BIRDVIEW_WIDTH, 0);
-    dst_vertices[2] = Point(BIRDVIEW_WIDTH, BIRDVIEW_HEIGHT);
-    dst_vertices[3] = Point(0, BIRDVIEW_HEIGHT);
+    dst_vertices[2] = Point(BIRDVIEW_WIDTH - 105, BIRDVIEW_HEIGHT);
+    dst_vertices[3] = Point(105, BIRDVIEW_HEIGHT);
+
+    // Point2f dst_vertices[4];
+    // dst_vertices[0] = Point(0, 0);
+    // dst_vertices[1] = Point(BIRDVIEW_WIDTH, 0);
+    // dst_vertices[2] = Point(BIRDVIEW_WIDTH, BIRDVIEW_HEIGHT);
+    // dst_vertices[3] = Point(0, BIRDVIEW_HEIGHT);
 
     Mat M = getPerspectiveTransform(src_vertices, dst_vertices);
 

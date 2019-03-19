@@ -47,18 +47,25 @@ int main(int argc, char** argv)
     bt4Topic = nh.param("bt4Topic", std::string("/bt4_status"));
     sensorTopic = nh.param("sensorTopic", std::string("/ss_status"));
 
+    ROS_INFO("bt1 topic = %s", bt1Topic.c_str());
+    ROS_INFO("bt2 topic = %s", bt2Topic.c_str());
+    ROS_INFO("bt3 topic = %s", bt3Topic.c_str());
+    ROS_INFO("bt4 topic = %s", bt4Topic.c_str());
+    ROS_INFO("sensor topic = %s", sensorTopic.c_str());
+
     // We dont need to use buttons now
-    // nh.subscribe(bt1Topic, 10, btn1Callback);
-    // nh.subscribe(bt2Topic, 10, btn2Callback);
-    // nh.subscribe(bt3Topic, 10, btn3Callback);
-    // nh.subscribe(bt4Topic, 10, btn4Callback);
-    nh.subscribe(sensorTopic, 10, sensorCallback);
+    ros::Subscriber bt1Sub = nh.subscribe(bt1Topic, 10, btn1Callback);
+    ros::Subscriber bt2Sub = nh.subscribe(bt2Topic, 10, btn2Callback);
+    ros::Subscriber bt3Sub = nh.subscribe(bt3Topic, 10, btn3Callback);
+    ros::Subscriber bt4Sub = nh.subscribe(bt4Topic, 10, btn4Callback);
+    ros::Subscriber ssSub = nh.subscribe(sensorTopic, 10, sensorCallback);
 
     publisher = nh.advertise<cds_msgs::System>("/system", 10);
 
     ros::Rate rate{30};
     while (ros::ok())
     {
+        ros::spinOnce();
         systemMsg.header.stamp = ros::Time::now();
 
         publisher.publish(systemMsg);

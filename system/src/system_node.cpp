@@ -5,17 +5,33 @@
 static ros::Publisher publisher;
 static cds_msgs::System systemMsg;
 
+bool isBtn1Pressed = false;
+bool isBtn4Pressed = false;
+bool isSensorDetected = false;
+
 void btn1Callback(const std_msgs::Bool& msg)
 {
-    // button 1
+    // button 1 ; start button
+    if (msg.data == true)
+    {
+        isBtn1Pressed = true;
+    } else 
+    {
+        if (isBtn1Pressed == true)
+        {
+            systemMsg.isStop.data = false;
+        }
+        isBtn1Pressed = false;
+    }
 }
 
+// Not work
 void btn2Callback(const std_msgs::Bool& msg)
 {
     // button 2
 }
 
-
+// Not work
 void btn3Callback(const std_msgs::Bool& msg)
 {
     // button 3 
@@ -24,13 +40,28 @@ void btn3Callback(const std_msgs::Bool& msg)
 
 void btn4Callback(const std_msgs::Bool& msg)
 {
-    // button 4 
+    // button 4 : stop button
+    if (msg.data == true)
+    {
+        isBtn4Pressed = true;
+    } else 
+    {
+        if (isBtn4Pressed == true)
+        {
+            systemMsg.isStop.data = true;
+        }
+        isBtn4Pressed = false;
+    }
 }
 
 void sensorCallback(const std_msgs::Bool& msg)
 {
     // sensor return false if it is activated
-    systemMsg.isStop.data = !msg.data; 
+    // if (systemMsg.isStop.data == true)
+    // {
+    //     return;
+    // }
+    // isSensorDetected = !msg.data;
 }
 
 
@@ -68,10 +99,16 @@ int main(int argc, char** argv)
         ros::spinOnce();
         systemMsg.header.stamp = ros::Time::now();
 
+        // if(isBtn4Pressed || isSensorDetected)
+        // {
+        //     systemMsg.isStop.data = true;
+        // }
+        // else {
+        //     systemMsg.isStop.data = false;
+        // }
         publisher.publish(systemMsg);
         rate.sleep();
     }
-
 
     return 0;
 }

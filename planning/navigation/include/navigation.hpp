@@ -42,7 +42,7 @@ private:
 
     static const int MIN_VELOCITY = 10;
     static const int MAX_VELOCITY = 30;
-    static const int DEF_VELOCITY = 20;
+    static const int DEF_VELOCITY = 10;
     static const int LANE_WIDTH = 50;
 
 

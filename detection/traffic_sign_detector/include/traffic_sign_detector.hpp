@@ -28,6 +28,11 @@ private:
     const Sign* getSign() const;
 
 private:
+    cv::Mat LEFT_TEMPLATE, RIGHT_TEMPLATE;
+    double MAX_DIFF;
+
+private:
+
     std::vector<Sign> signs;
     SignRecognizer* signRecognizer;
 };

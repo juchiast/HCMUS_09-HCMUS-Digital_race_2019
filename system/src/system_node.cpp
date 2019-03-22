@@ -93,6 +93,8 @@ int main(int argc, char** argv)
 
     publisher = nh.advertise<cds_msgs::System>("/system", 10);
 
+    systemMsg.isStop.data = true;
+
     ros::Rate rate{30};
     while (ros::ok())
     {

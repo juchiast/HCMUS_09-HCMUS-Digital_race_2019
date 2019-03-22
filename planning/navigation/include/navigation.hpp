@@ -26,6 +26,11 @@ public:
     cv::Point carDir;
     float theta;
 
+
+    static int MIN_VELOCITY;
+    static int MAX_VELOCITY;
+    static int DEF_VELOCITY;
+
 private:
     float errorAngle(const cv::Point &dst);
     float getSteerTurning();
@@ -40,9 +45,6 @@ private:
     int sign;
     int skipFrameCount;
 
-    static const int MIN_VELOCITY = 10;
-    static const int MAX_VELOCITY = 30;
-    static const int DEF_VELOCITY = 10;
     static const int LANE_WIDTH = 50;
 
 

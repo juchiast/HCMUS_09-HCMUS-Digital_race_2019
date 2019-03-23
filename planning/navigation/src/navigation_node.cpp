@@ -15,6 +15,45 @@ static ros::Publisher speedPublisher, steerPublisher;
 static Navigation navigation;
 static bool isStop = false;
 
+static bool isIncBtnPressed = false;
+static bool isDecBtnPressed = false;
+
+static void increaseSpeedCallback(const std_msgs::Bool& msg)
+{
+    if (msg.data == true)
+    {
+        isIncBtnPressed = true;
+    }
+    else
+    {
+        if (isIncBtnPressed == true)
+        {
+            // inc speed
+            Navigation::MIN_VELOCITY += 5;
+            Navigation::DEF_VELOCITY += 5;
+        }
+        isIncBtnPressed = false;
+    }
+}
+
+static void decreaseSpeedCallback(const std_msgs::Bool& msg)
+{
+    if (msg.data == true)
+    {
+        isDecBtnPressed = true;
+    }
+    else
+    {
+        if (isDecBtnPressed == true)
+        {
+            // dec speed
+            Navigation::MIN_VELOCITY -= 5;
+            Navigation::DEF_VELOCITY -= 5;
+        }
+        isDecBtnPressed = false;
+    }
+}
+
 void convertLandMarkMsg2Lane(const std::vector<cds_msgs::LandMark> &landmarkMsg, Navigation::Lane &lane)
 {
     lane.clear();
@@ -83,6 +122,8 @@ int main(int argc, char **argv)
     ros::Subscriber laneSub = nh.subscribe("/lane_detected", 10, laneCallback);
     ros::Subscriber signSub = nh.subscribe("/sign_detected", 10, signCallback);
     ros::Subscriber systemSub = nh.subscribe("/system", 10, systemCallback);
+    ros::Subscriber decSpeedSub = nh.subscribe("/bt2_status", 10, decreaseSpeedCallback);
+    ros::Subscriber incSpeedSub = nh.subscribe("/bt3_status", 10, decreaseSpeedCallback);
 
     speedPublisher = nh.advertise<std_msgs::Float32>("/set_speed_car_api", 10);
     steerPublisher = nh.advertise<std_msgs::Float32>("/set_steer_car_api", 10);
@@ -109,6 +150,10 @@ int main(int argc, char **argv)
 
         rate.sleep();
     }
+
+
+    publishSpeed(0);
+    publishSteer(0);
 
     return 0;
 }

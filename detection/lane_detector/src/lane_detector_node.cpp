@@ -7,9 +7,12 @@
 
 #include "cds_msgs/Lane.h"
 #include "std_msgs/String.h"
+#include "cds_msgs/System.h"
 
 LaneDetector laneDetector;
 ros::Publisher lanePublisher;
+
+static bool isStop = true;
 
 static void publishLane()
 {
@@ -54,6 +57,11 @@ static void publishLane()
 
 static void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
+    if (isStop)
+    {
+        return;
+    }
+
     cv_bridge::CvImagePtr cv_ptr;
     try
     {
@@ -67,6 +75,10 @@ static void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     }
 }
 
+static void systemCallback(const cds_msgs::System& msg){
+    isStop = msg.isStop.data;
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "lane_detector");
@@ -78,6 +90,8 @@ int main(int argc, char **argv)
 
     image_transport::ImageTransport it(nh);
     image_transport::Subscriber sub = it.subscribe(camera_topic, 1, imageCallback);
+
+    ros::Subscriber systemSub = nh.subscribe("/system", 1, systemCallback);
 
     std::string pub_lane_topic;
     nh.param<std::string>("pub_lane_topic", pub_lane_topic, "/lane_detected");

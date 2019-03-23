@@ -7,6 +7,10 @@ static cv::Point null = cv::Point{};
 const cv::Point Navigation::distanceNearLaneLine{10, 0};
 const cv::Point Navigation::carPos{120, 300};
 
+int Navigation::MIN_VELOCITY = 5;
+int Navigation::MAX_VELOCITY = 30;
+int Navigation::DEF_VELOCITY = 8;
+
 enum Sign
 {
     NONE = -1,

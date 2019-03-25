@@ -8,6 +8,13 @@
 
 class SignRecognizer;
 
+enum TrafficSign
+{
+    None = -1,      // Not a sign
+    Left = 1,       // Left sign (should have confident >= SIGN_THRESHOLD)
+    Right = 2       // Right sign (should have confident >= SIGN_THRESHOLD)
+};
+
 struct Sign
 {
     int id;
@@ -18,7 +25,7 @@ struct Sign
 class SignDetector
 {
 public:
-    SignDetector(SignRecognizer* recognizer);
+    SignDetector();
     ~SignDetector();
 
     void toSignMessage(cds_msgs::SignDetected& msg);
@@ -33,8 +40,8 @@ private:
 
 private:
 
-    std::vector<Sign> signs;
-    SignRecognizer* signRecognizer;
+    Sign signTypeDetected;
+    // SignRecognizer* signRecognizer;
 };
 
 #endif

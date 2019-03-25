@@ -57,11 +57,7 @@ void btn4Callback(const std_msgs::Bool& msg)
 void sensorCallback(const std_msgs::Bool& msg)
 {
     // sensor return false if it is activated
-    // if (systemMsg.isStop.data == true)
-    // {
-    //     return;
-    // }
-    // isSensorDetected = !msg.data;
+    isSensorDetected = !msg.data;
 }
 
 
@@ -101,6 +97,7 @@ int main(int argc, char** argv)
         ros::spinOnce();
         systemMsg.header.stamp = ros::Time::now();
 
+        systemMsg.isStop.data = isSensorDetected;
         // if(isBtn4Pressed || isSensorDetected)
         // {
         //     systemMsg.isStop.data = true;

@@ -6,13 +6,12 @@
 #include <opencv2/core.hpp>
 
 #include "traffic_sign_detector.hpp"
-#include "traffic_sign_recognizer.hpp"
 
 #include "cds_msgs/SignDetected.h"
 
 #define VISUALIZE_WIN_NAME "Sign"
 
-SignRecognizer *signRecognizer = nullptr;
+// SignRecognizer *signRecognizer = nullptr;
 SignDetector *signDetector = nullptr;
 ros::Publisher signPublisher;
 
@@ -26,8 +25,6 @@ static std::string getSignLabel(const cds_msgs::SignDetected &signMsg)
         return "left";
     case TrafficSign::Right:
         return "right";
-    case TrafficSign::Slow:
-        return "slow";
     }
     return "";
 }
@@ -95,8 +92,8 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "traffic_sign_detector");
 
-    signRecognizer = new BinarySignRecognizer();
-    signDetector = new SignDetector(signRecognizer);
+    // signRecognizer = new BinarySignRecognizer();
+    signDetector = new SignDetector();
 
     ros::NodeHandle nh;
 
@@ -113,6 +110,6 @@ int main(int argc, char **argv)
     ros::spin();
 
     cv::destroyAllWindows();
-    delete signRecognizer;
+    // delete signRecognizer;
     delete signDetector;
 }

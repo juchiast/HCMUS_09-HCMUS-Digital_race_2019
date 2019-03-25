@@ -4,8 +4,6 @@
 #include "opencv2/opencv.hpp"
 
 #include "traffic_sign_detector.hpp"
-#include "traffic_sign_recognizer.hpp"
-
 #include <unistd.h>
 
 #define SIZE_X 64.0
@@ -43,20 +41,16 @@ static double matching(cv::Mat image, cv::Mat templ)
   return minVal;
 }
 
-SignDetector::SignDetector(SignRecognizer *recognizer) : signRecognizer{ recognizer }
+SignDetector::SignDetector()
 {
   LEFT_TEMPLATE = blur(cv::imread("/home/nvidia/left.png", cv::IMREAD_GRAYSCALE));
   RIGHT_TEMPLATE = blur(cv::imread("/home/nvidia/right.png", cv::IMREAD_GRAYSCALE));
 
   MAX_DIFF = matching(LEFT_TEMPLATE, cv::Scalar::all(255) - LEFT_TEMPLATE);
-
-  cv::imshow("left", LEFT_TEMPLATE);
-  cv::imshow("right", RIGHT_TEMPLATE);
 }
 
 SignDetector::~SignDetector()
 {
-  delete signRecognizer;
 }
 
 cv::Mat SignDetector::deNoise(cv::Mat inputImage)
@@ -69,7 +63,6 @@ cv::Mat SignDetector::deNoise(cv::Mat inputImage)
 void SignDetector::detect(cv::Mat frame)
 {
   using namespace cv;
-  signs.clear();
   CV_Assert(!frame.empty());
 
   // Denoise image with gaussian blur
@@ -133,40 +126,52 @@ void SignDetector::detect(cv::Mat frame)
       }
     }
   }
+
   if (maxPercent >= 0.80)
   {
     cv::Scalar color = max_type == -1 ? cv::Scalar(0, 0, 255) : cv::Scalar(255, 0, 0);
     cv::rectangle(drawing, boundRect[i_max], color, 2, 8, 0);
+    this->signTypeDetected.id = max_type == -1 ? TrafficSign::Left : TrafficSign::Right;
+    this->signTypeDetected.confident = maxPercent;
+    this->signTypeDetected.boundingBox = boundRect[i_max];
+  } 
+  else 
+  {
+    this->signTypeDetected.id = TrafficSign::None;
   }
+
   cv::imshow("Drawing....", drawing);
 }
 
 const Sign *SignDetector::getSign() const
 {
-  Sign *signResult = nullptr;
-
-  if (!signs.empty())
-  {
-    float maxConfident = 0;
-    int maxId = -1;
-
-    for (size_t i = 0; i < signs.size(); i++)
-    {
-      if (signs[i].id != TrafficSign::None && signs[i].confident > maxConfident)
-      {
-        maxConfident = signs[i].confident;
-        maxId = i;
-      }
-    }
-
-    if (maxId == -1)
-    {
-      return nullptr;
-    }
-    return &this->signs[maxId];
+  
+  if (this->signTypeDetected.id != TrafficSign::None){
+    return &signTypeDetected;
   }
 
-  return signResult;
+  // if (!signs.empty())
+  // {
+  //   float maxConfident = 0;
+  //   int maxId = -1;
+
+  //   for (size_t i = 0; i < signs.size(); i++)
+  //   {
+  //     if (signs[i].id != TrafficSign::None && signs[i].confident > maxConfident)
+  //     {
+  //       maxConfident = signs[i].confident;
+  //       maxId = i;
+  //     }
+  //   }
+
+  //   if (maxId == -1)
+  //   {
+  //     return nullptr;
+  //   }
+  //   return &this->signs[maxId];
+  // }
+
+  return nullptr;
 }
 
 void SignDetector::toSignMessage(cds_msgs::SignDetected &msg)

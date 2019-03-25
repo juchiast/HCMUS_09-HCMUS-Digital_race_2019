@@ -138,11 +138,13 @@ int main(int argc, char **argv)
         {
             speed = navigation.getSpeed();
             steer = navigation.getSteer();
-        } else 
-        {
-            speed = 0;
-            steer = 0;
         }
+        else
+        {
+            speed = 0.0f;
+            steer = 0.0f;
+        }
+
         publishSpeed(speed);
         publishSteer(steer);
 

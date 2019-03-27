@@ -100,6 +100,9 @@ int main(int argc, char **argv)
 
 
     cv::namedWindow("config");
+    
+    cv::createTrackbar("skyline", "config", &skyLine, 480);
+
     cv::createTrackbar("birdview width", "config", &BIRDVIEW_WIDTH, 640);
     cv::createTrackbar("birdview height", "config", &BIRDVIEW_HEIGHT, 480);
     

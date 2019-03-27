@@ -8,6 +8,7 @@ static cds_msgs::System systemMsg;
 bool isBtn1Pressed = false;
 bool isBtn4Pressed = false;
 bool isSensorDetected = false;
+bool isForceStop = true;
 
 void btn1Callback(const std_msgs::Bool& msg)
 {
@@ -19,7 +20,7 @@ void btn1Callback(const std_msgs::Bool& msg)
     {
         if (isBtn1Pressed == true)
         {
-            systemMsg.isStop.data = false;
+            isForceStop = false;
         }
         isBtn1Pressed = false;
     }
@@ -48,7 +49,7 @@ void btn4Callback(const std_msgs::Bool& msg)
     {
         if (isBtn4Pressed == true)
         {
-            systemMsg.isStop.data = true;
+            isForceStop = true;
         }
         isBtn4Pressed = false;
     }
@@ -96,6 +97,14 @@ int main(int argc, char** argv)
     {
         ros::spinOnce();
         systemMsg.header.stamp = ros::Time::now();
+
+        if (isForceStop)
+        {
+            systemMsg.isStop.data = true;
+        } else
+        {
+            systemMsg.isStop.data = isSensorDetected;
+        }
 
         systemMsg.isStop.data = isSensorDetected;
         // if(isBtn4Pressed || isSensorDetected)

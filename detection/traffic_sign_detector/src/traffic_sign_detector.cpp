@@ -43,8 +43,20 @@ static double matching(cv::Mat image, cv::Mat templ)
 
 SignDetector::SignDetector()
 {
-  LEFT_TEMPLATE = blur(cv::imread("/home/nvidia/left.png", cv::IMREAD_GRAYSCALE));
-  RIGHT_TEMPLATE = blur(cv::imread("/home/nvidia/right.png", cv::IMREAD_GRAYSCALE));
+  std::string left_image_path = nodeHandle.param("/traffic_sign_detector/left_image_path", std::string("/home/nvidia/left.png"));
+  std::string right_image_path = nodeHandle.param("/traffic_sign_detector/right_image_path", std::string("/home/nvidia/right.png"));
+
+  ROS_INFO("Left image path = %s", left_image_path.c_str());
+  ROS_INFO("Right image path = %s", right_image_path.c_str());
+
+  cv::Mat left_image = cv::imread(left_image_path, cv::IMREAD_GRAYSCALE);
+  cv::Mat right_image = cv::imread(right_image_path, cv::IMREAD_GRAYSCALE);
+
+  CV_Assert(!left_image.empty());
+  CV_Assert(!right_image.empty());
+
+  LEFT_TEMPLATE = blur(left_image);
+  RIGHT_TEMPLATE = blur(right_image);
 
   MAX_DIFF = matching(LEFT_TEMPLATE, cv::Scalar::all(255) - LEFT_TEMPLATE);
 }
@@ -91,7 +103,8 @@ void SignDetector::detect(cv::Mat frame)
     approxPolyDP(cv::Mat(contours[i]), contours_poly[i], 3, true);
     boundRect[i] = cv::boundingRect(cv::Mat(contours_poly[i]));
 
-    if (boundRect[i].width <= 32 && boundRect[i].height <= 24) {
+    if (boundRect[i].width <= 32 && boundRect[i].height <= 24)
+    {
       continue;
     }
 
@@ -134,43 +147,22 @@ void SignDetector::detect(cv::Mat frame)
     this->signTypeDetected.id = max_type == -1 ? TrafficSign::Left : TrafficSign::Right;
     this->signTypeDetected.confident = maxPercent;
     this->signTypeDetected.boundingBox = boundRect[i_max];
-  } 
-  else 
+  }
+  else
   {
     this->signTypeDetected.id = TrafficSign::None;
   }
 
-  cv::imshow("Drawing....", drawing);
+  // cv::imshow("Drawing....", drawing);
 }
 
 const Sign *SignDetector::getSign() const
 {
-  
-  if (this->signTypeDetected.id != TrafficSign::None){
+
+  if (this->signTypeDetected.id != TrafficSign::None)
+  {
     return &signTypeDetected;
   }
-
-  // if (!signs.empty())
-  // {
-  //   float maxConfident = 0;
-  //   int maxId = -1;
-
-  //   for (size_t i = 0; i < signs.size(); i++)
-  //   {
-  //     if (signs[i].id != TrafficSign::None && signs[i].confident > maxConfident)
-  //     {
-  //       maxConfident = signs[i].confident;
-  //       maxId = i;
-  //     }
-  //   }
-
-  //   if (maxId == -1)
-  //   {
-  //     return nullptr;
-  //   }
-  //   return &this->signs[maxId];
-  // }
-
   return nullptr;
 }
 

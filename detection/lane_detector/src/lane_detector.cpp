@@ -1,32 +1,15 @@
 #include "lane_detector.hpp"
+#include <algorithm>
 
 using namespace cv;
 using namespace std;
 
-int min(int a, int b)
-{
-    return a < b ? a : b;
-}
-
 int LaneDetector::slideThickness = 10;
 int LaneDetector::BIRDVIEW_WIDTH = 240;
 int LaneDetector::BIRDVIEW_HEIGHT = 320;
-// int LaneDetector::BIRDVIEW_HEIGHT_CROP = 240;
-int LaneDetector::VERTICAL = 0;
-int LaneDetector::HORIZONTAL = 1;
 Point LaneDetector::null = Point();
 
 LaneDetector::LaneDetector() {
-    // cvCreateTrackbar("LowH", "Threshold", &minThreshold[0], 179);
-    // cvCreateTrackbar("HighH", "Threshold", &maxThreshold[0], 179);
-
-    // cvCreateTrackbar("LowS", "Threshold", &minThreshold[1], 255);
-    // cvCreateTrackbar("HighS", "Threshold", &maxThreshold[1], 255);
-
-    // cvCreateTrackbar("LowV", "Threshold", &minThreshold[2], 255);
-    // cvCreateTrackbar("HighV", "Threshold", &maxThreshold[2], 255);
-
-    // cvCreateTrackbar("Shadow Param", "Threshold", &shadowParam, 255);
 }
 
 LaneDetector::~LaneDetector(){}
@@ -54,7 +37,6 @@ vector<bool> LaneDetector::getRightTurn()
 void LaneDetector::detect(const Mat &src)
 {
     Mat img = preProcess(src);
-    // img = img(cv::Rect(0, BIRDVIEW_HEIGHT - BIRDVIEW_HEIGHT_CROP, BIRDVIEW_WIDTH, BIRDVIEW_HEIGHT_CROP));
 
     cv::Mat visualization;
     cv::cvtColor(img, visualization, cv::COLOR_GRAY2BGR);
@@ -237,7 +219,7 @@ void LaneDetector::detectLeftRight(cv::Mat visualization, const vector<vector<Po
         for (int j = 0; j < points[i].size(); j++)
         {
             int err = 320;
-            for (int m = 1; m < min(points.size() - 1 - i, 5); m++)
+            for (int m = 1; m < std::min(points.size() - 1 - i, 5UL); m++)
             {
                 for (int k = 0; k < points[i + 1].size(); k ++)
                 {

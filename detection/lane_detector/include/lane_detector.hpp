@@ -30,11 +30,6 @@ public:
 
     static int BIRDVIEW_WIDTH;
     static int BIRDVIEW_HEIGHT;
-    // static int BIRDVIEW_HEIGHT_CROP;
-
-
-    static int VERTICAL;
-    static int HORIZONTAL;
 
     static cv::Point null; 
 

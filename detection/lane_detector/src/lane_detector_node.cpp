@@ -66,6 +66,11 @@ static void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     try
     {
         cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+
+        // cv::Mat scaled;
+        // cv::pyrDown(cv_ptr->image, scaled);
+
+        // laneDetector.detect(scaled);
         laneDetector.detect(cv_ptr->image);
         publishLane();
     }
@@ -93,12 +98,26 @@ int main(int argc, char **argv)
 
     if (!nh.getParam("/lane_detector/birdview_width", LaneDetector::BIRDVIEW_WIDTH))
     {
-        ROS_ERROR("Not found param BIRDVIEW_WIDTH");
+        ROS_WARN("Not found param birdview_width, use default 240");
+        LaneDetector::BIRDVIEW_WIDTH = 240;
     }
 
     if (!nh.getParam("/lane_detector/birdview_height", LaneDetector::BIRDVIEW_HEIGHT))
     {
-        ROS_ERROR("Not found param BIRDVIEW_HEIGHT");
+        ROS_FATAL("Not found param birdview_height, use default 320");
+        LaneDetector::BIRDVIEW_HEIGHT = 320;
+    }
+
+    if (!nh.getParam("/lane_detector/skyline", LaneDetector::SKYLINE))
+    {
+        ROS_FATAL("Not found param skyline, use default 85");
+        LaneDetector::SKYLINE = 85;
+    }
+
+    if (!nh.getParam("/lane_detector/birdview_bottom_delta", LaneDetector::BIRDVIEW_BOTTOM_DELTA))
+    {
+        ROS_FATAL("Not found param birdview_bottom_delta, use default 105");
+        LaneDetector::BIRDVIEW_BOTTOM_DELTA = 105;
     }
 
     lanePublisher = nh.advertise<cds_msgs::Lane>("lane_detected", 10);

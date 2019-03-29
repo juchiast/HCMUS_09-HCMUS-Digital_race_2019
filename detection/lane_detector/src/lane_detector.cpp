@@ -102,6 +102,14 @@ Mat LaneDetector::preProcess(const Mat &src)
 
     cvtColor(src, imgHSV, COLOR_BGR2HSV);
 
+    std::vector<cv::Mat> layers;
+    cv::split(imgHSV, layers);
+
+    cv::imshow("H", layers[0]);
+cv::imshow("S", layers[1]);
+cv::imshow("V", layers[2]);
+
+
     inRange(imgHSV, 
         Scalar(minThreshold[0], minThreshold[1], minThreshold[2]),
         Scalar(maxThreshold[0], maxThreshold[1], maxThreshold[2]),

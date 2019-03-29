@@ -97,7 +97,10 @@ int main(int argc, char** argv)
         ros::spinOnce();
         systemMsg.header.stamp = ros::Time::now();
 
-        systemMsg.isStop.data = isSensorDetected;
+        if (isSensorDetected)
+        {
+            systemMsg.isStop.data = isSensorDetected;
+        }        
         // if(isBtn4Pressed || isSensorDetected)
         // {
         //     systemMsg.isStop.data = true;

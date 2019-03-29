@@ -3,10 +3,10 @@
 		<arg name="port" value="9090" />
     </include> -->
 
-    <!-- <node name="traffic_sign_detector" pkg="traffic_sign_detector" type="traffic_sign_detector_node" output="screen" args="_image_transport:=compressed" cwd="node">
+    <node name="traffic_sign_detector" pkg="traffic_sign_detector" type="traffic_sign_detector_node" output="screen" args="_image_transport:=compressed" cwd="node">
         <param name="sub_camera_topic" value="/camera/rgb/image_raw" />
         <param name="pub_sign_topic" value="/sign_detected" />
-    </node>   -->
+    </node>  
 
     <node name="lane_detector" pkg="lane_detector" type="lane_detector_node" output="screen" args="_image_transport:=compressed" cwd="node">
         <param name="sub_camera_topic" value="/camera/rgb/image_raw" />
@@ -16,13 +16,13 @@
     <node name="navigation" pkg="navigation" type="navigation_node" output="screen" cwd="node" />
 
     <!-- Speed and steer  -->
-    <!-- <node name="car_controller" pkg="car_controller" type="car_controller_node" /> -->
+    <node name="car_controller" pkg="car_controller" type="car_controller_node" />
 
     <!-- Button 1,2,3,4, LCD, sensor... -->
-    <!-- <node name="hal" pkg="hal" type="hal_node" /> -->
+    <node name="hal" pkg="hal" type="hal_node" />
     
     <!-- Camera -->
-    <!-- <include file="$(find astra_launch)/launch/astrapro.launch" /> -->
+    <include file="$(find astra_launch)/launch/astrapro.launch" />
 
     <!-- Handle message for all system -->
     <node name="system" pkg="system" type="system_node" />

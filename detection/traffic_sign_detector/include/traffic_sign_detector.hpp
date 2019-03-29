@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 
+#include <ros/ros.h>
 #include "cds_msgs/SignDetected.h"
 
 class SignRecognizer;
@@ -39,9 +40,9 @@ private:
     double MAX_DIFF;
 
 private:
-
     Sign signTypeDetected;
-    // SignRecognizer* signRecognizer;
+
+    ros::NodeHandle nodeHandle;
 };
 
 #endif

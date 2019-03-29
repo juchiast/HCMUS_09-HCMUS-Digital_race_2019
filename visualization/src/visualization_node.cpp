@@ -14,6 +14,7 @@ cds_msgs::SignDetected lastSignMsg;
 int skyLine = 85;
 int BIRDVIEW_WIDTH = 240;
 int BIRDVIEW_HEIGHT = 320;
+int delta_width_bot = 105;
 
 
 static void signMsgCallback(const cds_msgs::SignDetected &msg)
@@ -38,8 +39,8 @@ cv::Mat birdViewTranform(const cv::Mat &src)
     Point2f dst_vertices[4];
     dst_vertices[0] = Point(0, 0);
     dst_vertices[1] = Point(BIRDVIEW_WIDTH, 0);
-    dst_vertices[2] = Point(BIRDVIEW_WIDTH, BIRDVIEW_HEIGHT);
-    dst_vertices[3] = Point(0, BIRDVIEW_HEIGHT);
+    dst_vertices[2] = Point(BIRDVIEW_WIDTH - delta_width_bot, BIRDVIEW_HEIGHT);
+    dst_vertices[3] = Point(delta_width_bot, BIRDVIEW_HEIGHT);
 
     Mat M = getPerspectiveTransform(src_vertices, dst_vertices);
 
@@ -100,8 +101,12 @@ int main(int argc, char **argv)
 
 
     cv::namedWindow("config");
+    
+    cv::createTrackbar("skyline", "config", &skyLine, 480);
+
     cv::createTrackbar("birdview width", "config", &BIRDVIEW_WIDTH, 640);
-    cv::createTrackbar("birdview height", "config", &BIRDVIEW_HEIGHT, 480);
+    cv::createTrackbar("birdview height", "config", &BIRDVIEW_HEIGHT, 640);
+    cv::createTrackbar("delta_width", "config", &delta_width_bot, 640);
     
     image_transport::ImageTransport it(nh);
     image_transport::Subscriber sub = it.subscribe("/camera/rgb/image_raw", 10, imageCallback);

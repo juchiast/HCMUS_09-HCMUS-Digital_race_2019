@@ -11,9 +11,9 @@
 
 #define VISUALIZE_WIN_NAME "Sign"
 
-// SignRecognizer *signRecognizer = nullptr;
 SignDetector *signDetector = nullptr;
 ros::Publisher signPublisher;
+cv::RNG rng(123456);
 
 TrafficSign prevPublishedSign = TrafficSign::None;
 
@@ -37,14 +37,11 @@ static void visualizeSign(cv::Mat colorImage, const cds_msgs::SignDetected &sign
     int thickness = 1;
     int baseline = 0;
     int padding = 2;
-    cv::RNG rng(123456);
     const cv::Scalar backgroundColor(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
     const cv::Scalar foregroundColor(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
     const cv::Scalar textColor(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
 
     cv::Size textSize = cv::getTextSize(signLabel, fontface, scale, thickness, &baseline);
-    // cv::Mat crop = colorImage(cv::Rect{signMsg.x, signMsg.y, signMsg.width, signMsg.height});
-    // cv::Mat visualizeImage = cv::Mat(cv::Size(crop.cols, crop.rows + textSize.height), CV_8UC3);
     cv::Mat visualizeImage = colorImage.clone();
 
     cv::Point textPos{signMsg.x, signMsg.y - textSize.height};
@@ -65,7 +62,6 @@ static void publishSign(cv::Mat image)
 
     signDetector->toSignMessage(msg);
     visualizeSign(image, msg);
-
 
     if (!(msg.id == TrafficSign::None && prevPublishedSign == TrafficSign::None))
     {
@@ -90,26 +86,23 @@ static void imageCallback(const sensor_msgs::ImageConstPtr &msg)
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "traffic_sign_detector");
-
-    // signRecognizer = new BinarySignRecognizer();
-    signDetector = new SignDetector();
+    ros::init(argc, argv, "~");
 
     ros::NodeHandle nh;
+    std::string left_image_path, right_image_path;
 
-    std::string camera_topic;
-    nh.param<std::string>("sub_camera_topic", camera_topic, "/camera/rgb/image_raw");
+    signDetector = new SignDetector();
 
     image_transport::ImageTransport it(nh);
-    image_transport::Subscriber sub = it.subscribe(camera_topic, 1, imageCallback);
+    image_transport::Subscriber sub = it.subscribe("/camera/rgb/image_raw", 1, imageCallback);
 
-    std::string pub_sign_topic;
-    nh.param<std::string>("pub_sign_topic", pub_sign_topic, "/sign_detected");
-    signPublisher = nh.advertise<cds_msgs::SignDetected>(pub_sign_topic, 10);
+    signPublisher = nh.advertise<cds_msgs::SignDetected>("sign_detected", 10);
+
+    ROS_INFO("sign_detector node started");
 
     ros::spin();
 
     cv::destroyAllWindows();
-    // delete signRecognizer;
+
     delete signDetector;
 }

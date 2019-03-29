@@ -1,5 +1,1 @@
 .vscode/
-
-# ignore all captured image
-*.jpg
-*.png

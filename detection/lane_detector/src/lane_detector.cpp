@@ -1,32 +1,18 @@
 #include "lane_detector.hpp"
+#include <algorithm>
 
 using namespace cv;
 using namespace std;
 
-int min(int a, int b)
-{
-    return a < b ? a : b;
-}
-
 int LaneDetector::slideThickness = 10;
 int LaneDetector::BIRDVIEW_WIDTH = 240;
 int LaneDetector::BIRDVIEW_HEIGHT = 320;
-// int LaneDetector::BIRDVIEW_HEIGHT_CROP = 240;
-int LaneDetector::VERTICAL = 0;
-int LaneDetector::HORIZONTAL = 1;
+int LaneDetector::SKYLINE = 85;
+int LaneDetector::BIRDVIEW_BOTTOM_DELTA = 105;
+
 Point LaneDetector::null = Point();
 
 LaneDetector::LaneDetector() {
-    // cvCreateTrackbar("LowH", "Threshold", &minThreshold[0], 179);
-    // cvCreateTrackbar("HighH", "Threshold", &maxThreshold[0], 179);
-
-    // cvCreateTrackbar("LowS", "Threshold", &minThreshold[1], 255);
-    // cvCreateTrackbar("HighS", "Threshold", &maxThreshold[1], 255);
-
-    // cvCreateTrackbar("LowV", "Threshold", &minThreshold[2], 255);
-    // cvCreateTrackbar("HighV", "Threshold", &maxThreshold[2], 255);
-
-    // cvCreateTrackbar("Shadow Param", "Threshold", &shadowParam, 255);
 }
 
 LaneDetector::~LaneDetector(){}
@@ -54,7 +40,6 @@ vector<bool> LaneDetector::getRightTurn()
 void LaneDetector::detect(const Mat &src)
 {
     Mat img = preProcess(src);
-    // img = img(cv::Rect(0, BIRDVIEW_HEIGHT - BIRDVIEW_HEIGHT_CROP, BIRDVIEW_WIDTH, BIRDVIEW_HEIGHT_CROP));
 
     cv::Mat visualization;
     cv::cvtColor(img, visualization, cv::COLOR_GRAY2BGR);
@@ -245,7 +230,7 @@ void LaneDetector::detectLeftRight(cv::Mat visualization, const vector<vector<Po
         for (int j = 0; j < points[i].size(); j++)
         {
             int err = 320;
-            for (int m = 1; m < min(points.size() - 1 - i, 5); m++)
+            for (int m = 1; m < std::min(points.size() - 1 - i, 5UL); m++)
             {
                 for (int k = 0; k < points[i + 1].size(); k ++)
                 {
@@ -423,22 +408,16 @@ Mat LaneDetector::birdViewTranform(const Mat &src)
     int width = src.size().width;
     int height = src.size().height;
 
-    src_vertices[0] = Point(0, skyLine);
-    src_vertices[1] = Point(width, skyLine);
+    src_vertices[0] = Point(0, SKYLINE);
+    src_vertices[1] = Point(width, SKYLINE);
     src_vertices[2] = Point(width, height);
     src_vertices[3] = Point(0, height);
 
     Point2f dst_vertices[4];
     dst_vertices[0] = Point(0, 0);
     dst_vertices[1] = Point(BIRDVIEW_WIDTH, 0);
-    dst_vertices[2] = Point(BIRDVIEW_WIDTH - 105, BIRDVIEW_HEIGHT);
-    dst_vertices[3] = Point(105, BIRDVIEW_HEIGHT);
-
-    // Point2f dst_vertices[4];
-    // dst_vertices[0] = Point(0, 0);
-    // dst_vertices[1] = Point(BIRDVIEW_WIDTH, 0);
-    // dst_vertices[2] = Point(BIRDVIEW_WIDTH, BIRDVIEW_HEIGHT);
-    // dst_vertices[3] = Point(0, BIRDVIEW_HEIGHT);
+    dst_vertices[2] = Point(BIRDVIEW_WIDTH - BIRDVIEW_BOTTOM_DELTA, BIRDVIEW_HEIGHT);
+    dst_vertices[3] = Point(BIRDVIEW_BOTTOM_DELTA, BIRDVIEW_HEIGHT);
 
     Mat M = getPerspectiveTransform(src_vertices, dst_vertices);
 

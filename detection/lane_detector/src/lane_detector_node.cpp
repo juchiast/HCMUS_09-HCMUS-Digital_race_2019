@@ -66,6 +66,11 @@ static void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     try
     {
         cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+
+        // cv::Mat scaled;
+        // cv::pyrDown(cv_ptr->image, scaled);
+
+        // laneDetector.detect(scaled);
         laneDetector.detect(cv_ptr->image);
         publishLane();
     }
@@ -85,17 +90,39 @@ int main(int argc, char **argv)
 
     ros::NodeHandle nh;
 
-    std::string camera_topic;
-    nh.param<std::string>("sub_camera_topic", camera_topic, "/camera/rgb/image_raw");
 
     image_transport::ImageTransport it(nh);
-    image_transport::Subscriber sub = it.subscribe(camera_topic, 1, imageCallback);
+    image_transport::Subscriber sub = it.subscribe("/camera/rgb/image_raw", 1, imageCallback);
 
     ros::Subscriber systemSub = nh.subscribe("/system", 1, systemCallback);
 
-    std::string pub_lane_topic;
-    nh.param<std::string>("pub_lane_topic", pub_lane_topic, "/lane_detected");
-    lanePublisher = nh.advertise<cds_msgs::Lane>(pub_lane_topic, 10);
+    if (!nh.getParam("/lane_detector/birdview_width", LaneDetector::BIRDVIEW_WIDTH))
+    {
+        ROS_WARN("Not found param birdview_width, use default 240");
+        LaneDetector::BIRDVIEW_WIDTH = 240;
+    }
+
+    if (!nh.getParam("/lane_detector/birdview_height", LaneDetector::BIRDVIEW_HEIGHT))
+    {
+        ROS_FATAL("Not found param birdview_height, use default 320");
+        LaneDetector::BIRDVIEW_HEIGHT = 320;
+    }
+
+    if (!nh.getParam("/lane_detector/skyline", LaneDetector::SKYLINE))
+    {
+        ROS_FATAL("Not found param skyline, use default 85");
+        LaneDetector::SKYLINE = 85;
+    }
+
+    if (!nh.getParam("/lane_detector/birdview_bottom_delta", LaneDetector::BIRDVIEW_BOTTOM_DELTA))
+    {
+        ROS_FATAL("Not found param birdview_bottom_delta, use default 105");
+        LaneDetector::BIRDVIEW_BOTTOM_DELTA = 105;
+    }
+
+    lanePublisher = nh.advertise<cds_msgs::Lane>("lane_detected", 10);
+
+    ROS_INFO("lane_detector node started");
 
     ros::spin();
 

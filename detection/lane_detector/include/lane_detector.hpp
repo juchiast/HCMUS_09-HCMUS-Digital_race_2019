@@ -30,11 +30,9 @@ public:
 
     static int BIRDVIEW_WIDTH;
     static int BIRDVIEW_HEIGHT;
-    // static int BIRDVIEW_HEIGHT_CROP;
+    static int SKYLINE;
+    static int BIRDVIEW_BOTTOM_DELTA;
 
-
-    static int VERTICAL;
-    static int HORIZONTAL;
 
     static cv::Point null; 
 
@@ -65,7 +63,6 @@ private:
     int maxLaneInShadow[3] = {120, 80, 171};
     int binaryThreshold = 180;
 
-    int skyLine = 85;
     int shadowParam = 40;
 
     LanePoint leftLane, rightLane;

@@ -18,6 +18,13 @@ static bool isStop = false;
 static bool isIncBtnPressed = false;
 static bool isDecBtnPressed = false;
 
+static bool shouldTurn = false;
+static constexpr const int DIRECTION_LEFT = 1;
+static constexpr const int DIRECTION_RIGHT = -1;
+static int turnDirection = 0;
+
+
+
 static void increaseSpeedCallback(const std_msgs::Bool& msg)
 {
     if (msg.data == true)
@@ -103,9 +110,38 @@ static void laneCallback(const cds_msgs::LaneConstPtr &laneMsg)
     navigation.update(leftTurning, rightTurning);
 }
 
+static bool isTurn(const cds_msgs::SignDetected& signMsg)
+{
+    return signMsg.width * signMsg.height > 4200;
+}
+
 static void signCallback(const cds_msgs::SignDetected &signMsg)
 {
+    shouldTurn = isTurn(signMsg);
+    if (shouldTurn)
+    {
+        turnDirection = (signMsg.id == 1) ? DIRECTION_LEFT : DIRECTION_RIGHT;
+    }
     navigation.update(signMsg);
+}
+
+static void publishWhenTurning()
+{
+    static const float SPEED_TURN = 0.5 * 8 * 5 / 18.0f; // m/s
+    static const int ANGLE = 90;    // Degree
+    static const float DISTANCE_TURN = 1;   // m
+    float angleTurn = ANGLE * SPEED_TURN / DISTANCE_TURN; 
+    publishSpeed(8);
+
+    angleTurn = angleTurn * turnDirection;
+    publishSteer(angleTurn);
+
+    ROS_INFO("angle %f, time %f, direct %d", angleTurn, 1 / (SPEED_TURN / DISTANCE_TURN), turnDirection);
+
+    //ros::Rate sleepRate{};// SPEED_TURN / DISTANCE_TURN};
+    ros::Duration(DISTANCE_TURN / SPEED_TURN).sleep();
+    ROS_INFO("WAKEUP");
+    shouldTurn = false;
 }
 
 static void systemCallback(const cds_msgs::System &systemMsg)
@@ -122,31 +158,30 @@ int main(int argc, char **argv)
     ros::Subscriber laneSub = nh.subscribe("/lane_detected", 10, laneCallback);
     ros::Subscriber signSub = nh.subscribe("/sign_detected", 10, signCallback);
     ros::Subscriber systemSub = nh.subscribe("/system", 10, systemCallback);
-    ros::Subscriber decSpeedSub = nh.subscribe("/bt2_status", 10, decreaseSpeedCallback);
-    ros::Subscriber incSpeedSub = nh.subscribe("/bt3_status", 10, decreaseSpeedCallback);
+    // ros::Subscriber decSpeedSub = nh.subscribe("/bt2_status", 10, decreaseSpeedCallback);
+    // ros::Subscriber incSpeedSub = nh.subscribe("/bt3_status", 10, decreaseSpeedCallback);
 
     speedPublisher = nh.advertise<std_msgs::Float32>("/set_speed_car_api", 10);
     steerPublisher = nh.advertise<std_msgs::Float32>("/set_steer_car_api", 10);
 
     ros::Rate rate{50};
-    float speed, steer;
-
     while (ros::ok())
     {
         ros::spinOnce();
-        if (!isStop)
+
+        if (isStop)
         {
-            speed = navigation.getSpeed();
-            steer = navigation.getSteer();
-        }
-        else
+            publishSpeed(0);
+            publishSteer(0);
+        } else if (shouldTurn)
         {
-            speed = 0.0f;
-            steer = 0.0f;
+            publishWhenTurning();
+        } else 
+        {
+            publishSpeed(navigation.getSpeed());
+            publishSteer(navigation.getSteer());
         }
 
-        publishSpeed(speed);
-        publishSteer(steer);
 
         rate.sleep();
     }

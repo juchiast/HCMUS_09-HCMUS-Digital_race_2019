@@ -106,7 +106,7 @@ int main(int argc, char** argv)
             systemMsg.isStop.data = isSensorDetected;
         }
 
-        systemMsg.isStop.data = isSensorDetected;
+        // systemMsg.isStop.data = isSensorDetected;   
         // if(isBtn4Pressed || isSensorDetected)
         // {
         //     systemMsg.isStop.data = true;

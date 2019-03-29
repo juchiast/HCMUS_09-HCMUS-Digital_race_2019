@@ -153,7 +153,7 @@ void SignDetector::detect(cv::Mat frame)
     this->signTypeDetected.id = TrafficSign::None;
   }
 
-  // cv::imshow("Drawing....", drawing);
+  cv::imshow("Drawing....", drawing);
 }
 
 const Sign *SignDetector::getSign() const

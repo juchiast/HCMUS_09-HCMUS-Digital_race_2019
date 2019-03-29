@@ -64,7 +64,7 @@ static void publishSign(cv::Mat image)
     visualizeSign(image, msg);
 
     if (!(msg.id == TrafficSign::None && prevPublishedSign == TrafficSign::None))
-    {
+    {        
         signPublisher.publish(msg);
         prevPublishedSign = static_cast<TrafficSign>(msg.id);
     }
@@ -86,7 +86,7 @@ static void imageCallback(const sensor_msgs::ImageConstPtr &msg)
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "~");
+    ros::init(argc, argv, "traffic_sign_detector");
 
     ros::NodeHandle nh;
     std::string left_image_path, right_image_path;

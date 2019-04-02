@@ -41,14 +41,8 @@ static double matching(cv::Mat image, cv::Mat templ)
   return minVal;
 }
 
-SignDetector::SignDetector()
+SignDetector::SignDetector(std::string left_image_path, std::string right_image_path)
 {
-  std::string left_image_path = nodeHandle.param("/traffic_sign_detector/left_image_path", std::string("/home/nvidia/left.png"));
-  std::string right_image_path = nodeHandle.param("/traffic_sign_detector/right_image_path", std::string("/home/nvidia/right.png"));
-
-  ROS_INFO("Left image path = %s", left_image_path.c_str());
-  ROS_INFO("Right image path = %s", right_image_path.c_str());
-
   cv::Mat left_image = cv::imread(left_image_path, cv::IMREAD_GRAYSCALE);
   cv::Mat right_image = cv::imread(right_image_path, cv::IMREAD_GRAYSCALE);
 
@@ -164,21 +158,4 @@ const Sign *SignDetector::getSign() const
     return &signTypeDetected;
   }
   return nullptr;
-}
-
-void SignDetector::toSignMessage(cds_msgs::SignDetected &msg)
-{
-  const Sign *sign = getSign();
-  if (sign == nullptr)
-  {
-    msg.id = TrafficSign::None;
-  }
-  else
-  {
-    msg.id = static_cast<int>(sign->id);
-    msg.x = sign->boundingBox.x;
-    msg.y = sign->boundingBox.y;
-    msg.width = sign->boundingBox.width;
-    msg.height = sign->boundingBox.height;
-  }
 }

@@ -1,10 +1,18 @@
 #ifndef NAVIGATION_HPP
 #define NAVIGATION_HPP
 
-#include "cds_msgs/Lane.h"
-#include "cds_msgs/SignDetected.h"
 #include <vector>
 #include <opencv2/core.hpp>
+
+struct SignDetected 
+{
+    int id;
+    float confident;
+    int x;
+    int y;
+    int width;
+    int height;
+};
 
 
 class Navigation
@@ -13,12 +21,12 @@ public:
 
     typedef std::vector<cv::Point> Lane;
     typedef std::vector<bool> TurningFlags;
-
+    
     Navigation();
 
     void update(const Lane& leftLane, const Lane& rightLane);
     void update(const TurningFlags& leftTurnFlags, const TurningFlags& rightTurnFlags);
-    void update(const cds_msgs::SignDetected& sign);
+    void update(const SignDetected& sign);
     float getSpeed();
     float getSteer();
 

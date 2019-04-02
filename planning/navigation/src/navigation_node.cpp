@@ -122,7 +122,14 @@ static void signCallback(const cds_msgs::SignDetected &signMsg)
     {
         turnDirection = (signMsg.id == 1) ? DIRECTION_LEFT : DIRECTION_RIGHT;
     }
-    navigation.update(signMsg);
+    SignDetected sign;
+    sign.id = signMsg.id;
+    sign.confident = signMsg.confident;
+    sign.height = signMsg.height;
+    sign.width = signMsg.width;
+    sign.x = signMsg.x;
+    sign.y = signMsg.y;
+    navigation.update(sign);
 }
 
 static void publishWhenTurning()

@@ -17,6 +17,24 @@ cv::RNG rng(123456);
 
 TrafficSign prevPublishedSign = TrafficSign::None;
 
+
+static void toSignMessage(cds_msgs::SignDetected &msg)
+{
+  const Sign *sign = signDetector->getSign();
+  if (sign == nullptr)
+  {
+    msg.id = TrafficSign::None;
+  }
+  else
+  {
+    msg.id = static_cast<int>(sign->id);
+    msg.x = sign->boundingBox.x;
+    msg.y = sign->boundingBox.y;
+    msg.width = sign->boundingBox.width;
+    msg.height = sign->boundingBox.height;
+  }
+}
+
 static std::string getSignLabel(const cds_msgs::SignDetected &signMsg)
 {
     switch (signMsg.id)
@@ -60,7 +78,7 @@ static void publishSign(cv::Mat image)
     cds_msgs::SignDetected msg;
     msg.header.stamp = ros::Time::now();
 
-    signDetector->toSignMessage(msg);
+    toSignMessage(msg);
     visualizeSign(image, msg);
 
     if (!(msg.id == TrafficSign::None && prevPublishedSign == TrafficSign::None))
@@ -89,9 +107,14 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "traffic_sign_detector");
 
     ros::NodeHandle nh;
-    std::string left_image_path, right_image_path;
+    std::string left_image_path = nh.param("/traffic_sign_detector/left_image_path", std::string("/home/nvidia/left.png"));
+    std::string right_image_path = nh.param("/traffic_sign_detector/right_image_path", std::string("/home/nvidia/right.png"));
 
-    signDetector = new SignDetector();
+    ROS_INFO("Left image path = %s", left_image_path.c_str());
+    ROS_INFO("Right image path = %s", right_image_path.c_str());
+
+
+    signDetector = new SignDetector(left_image_path, right_image_path);
 
     image_transport::ImageTransport it(nh);
     image_transport::Subscriber sub = it.subscribe("/camera/rgb/image_raw", 1, imageCallback);

@@ -1,5 +1,4 @@
 #include "navigation.hpp"
-#include <ros/ros.h>
 
 using namespace cv;
 
@@ -51,7 +50,7 @@ void Navigation::update(const TurningFlags &leftTurn, const TurningFlags &rightT
     this->rightTurn = rightTurn;
 }
 
-void Navigation::update(const cds_msgs::SignDetected &sign)
+void Navigation::update(const SignDetected &sign)
 {
     if (this->skipFrameCount <= 0)
     {

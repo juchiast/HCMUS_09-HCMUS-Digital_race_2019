@@ -4,11 +4,6 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 
-#include <ros/ros.h>
-#include "cds_msgs/SignDetected.h"
-
-class SignRecognizer;
-
 enum TrafficSign
 {
     None = -1,      // Not a sign
@@ -26,14 +21,14 @@ struct Sign
 class SignDetector
 {
 public:
-    SignDetector();
+    SignDetector(std::string left_image_path, std::string right_image_path);
     ~SignDetector();
 
-    void toSignMessage(cds_msgs::SignDetected& msg);
     void detect(cv::Mat frame);
+    const Sign* getSign() const;
+
 private:
     cv::Mat deNoise(cv::Mat inputImage);
-    const Sign* getSign() const;
 
 private:
     cv::Mat LEFT_TEMPLATE, RIGHT_TEMPLATE;
@@ -41,8 +36,6 @@ private:
 
 private:
     Sign signTypeDetected;
-
-    ros::NodeHandle nodeHandle;
 };
 
 #endif

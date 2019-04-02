@@ -16,14 +16,16 @@
     <!-- Speed and steer  -->
     <node name="car_controller" pkg="car_controller" type="car_controller_node" />
 
+
+    <!-- Handle message for all system -->
+    <node name="system" pkg="system" type="system_node" />
+
     <!-- Button 1,2,3,4, LCD, sensor... -->
     <node name="hal" pkg="hal" type="hal_node" />
     
     <!-- Camera -->
     <include file="$(find astra_launch)/launch/astrapro.launch" />
 
-    <!-- Handle message for all system -->
-    <node name="system" pkg="system" type="system_node" />
 
     <!-- <node name="road_segmentation" pkg="road_segmentation" type="road_segmentation_node" output="screen" args="_image_transport:=compressed" cwd="node">
         <param name="sub_camera_topic" value="/camera/rgb/image_raw" />

@@ -7,7 +7,7 @@ using namespace std;
 int LaneDetector::slideThickness = 10;
 int LaneDetector::BIRDVIEW_WIDTH = 240;
 int LaneDetector::BIRDVIEW_HEIGHT = 320;
-int LaneDetector::SKYLINE = 85;
+int LaneDetector::SKYLINE = 160;
 int LaneDetector::BIRDVIEW_BOTTOM_DELTA = 105;
 
 Point LaneDetector::null = Point();
@@ -78,7 +78,7 @@ void LaneDetector::detect(const Mat &src)
 
 
     cv::imshow("Lane detection", visualization);
-    cv::waitKey(1);
+    cv::waitKey(0);
 }
 
 Mat LaneDetector::preProcess(const Mat &src)

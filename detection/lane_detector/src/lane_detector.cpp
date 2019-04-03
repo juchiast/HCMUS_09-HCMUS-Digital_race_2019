@@ -7,8 +7,8 @@ using namespace std;
 int LaneDetector::slideThickness = 10;
 int LaneDetector::BIRDVIEW_WIDTH = 240;
 int LaneDetector::BIRDVIEW_HEIGHT = 320;
-int LaneDetector::SKYLINE = 160;
-int LaneDetector::BIRDVIEW_BOTTOM_DELTA = 105;
+int LaneDetector::SKYLINE = 120;
+int LaneDetector::BIRDVIEW_BOTTOM_DELTA = 50;
 
 Point LaneDetector::null = Point();
 
@@ -92,7 +92,7 @@ Mat LaneDetector::preProcess(const Mat &src)
         Scalar(minThreshold[0], minThreshold[1], minThreshold[2]),
         Scalar(maxThreshold[0], maxThreshold[1], maxThreshold[2]),
         imgThresholded);
-
+    imshow("Binary", imgThresholded);
     dst = birdViewTranform(imgThresholded);
     // dst = imgThresholded;
 
@@ -166,7 +166,7 @@ std::vector<std::vector<cv::Point> > LaneDetector::findLayerCentroids(const std:
         for (const auto& contour : contours)
         {
             int area = contourArea(contour, false);
-            if (area > 10 && area < 125) {
+            if (area > 10) {
                 Moments M1 = moments(contour, false);
                 Point2f centroid = Point2f(static_cast<float> (M1.m10 / M1.m00), static_cast<float> (M1.m01 / M1.m00));
                 centroid.y += slideThickness * i;

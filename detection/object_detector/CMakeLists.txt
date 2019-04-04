@@ -7,6 +7,8 @@ find_package(catkin REQUIRED COMPONENTS
   cds_msgs
   roscpp
   std_msgs
+  cv_bridge
+  sensor_msgs
 )
 
 find_package(OpenCV 3 REQUIRED)

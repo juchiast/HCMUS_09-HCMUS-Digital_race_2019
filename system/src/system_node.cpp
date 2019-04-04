@@ -31,28 +31,32 @@ void btn1Callback(const std_msgs::Bool& msg)
 }
 void speedCallback(const std_msgs::Float32& msg)
 {
-    char buffer[10];
+    static char buffer[255];
     float x= msg.data;
-    snprintf(buffer, 10, "%.2f", x);
+    snprintf(buffer, 255, "2:2:SPEED %.2f", x);
 
     std_msgs::String str_msg;
-    str_msg.data = (std::string("2:2:SPEED: ") + buffer).c_str();
+    str_msg.data = buffer;
     lcd_publisher.publish(str_msg);
 }
 void signCallback(const cds_msgs::SignDetected& msg)
 {
     std::string x;
     if(msg.id==-1){
-        x = "None";
+        x = "None ";
     }
     if(msg.id==1){
-        x = "Left";
+        x = "Left ";
     }
     else if(msg.id==2){
         x = "Right";
     }
+
+    static char buffer[255];
+    snprintf(buffer, 255, "2:3:SIGN %s", x.c_str());
+
     std_msgs::String str_msg;
-    str_msg.data=(std::string("11:2:SIGN: ") + x).c_str();
+    str_msg.data= buffer;
     lcd_publisher.publish(str_msg);
 }
 
@@ -134,6 +138,7 @@ int main(int argc, char** argv)
     publisher = nh.advertise<cds_msgs::System>("/system", 10);
     lcd_publisher = nh.advertise<std_msgs::String>("/lcd_print", 10);
 
+
     systemMsg.isStop.data = true;
 
     ros::Rate rate{30};
@@ -159,6 +164,12 @@ int main(int argc, char** argv)
         //     systemMsg.isStop.data = false;
         // }
         publisher.publish(systemMsg);
+
+        {
+            std_msgs::String msg;
+            msg.data = "6:0:HCMUS09";
+            lcd_publisher.publish(msg);
+        }
         rate.sleep();
     }
 

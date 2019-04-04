@@ -7,8 +7,8 @@
     <node name="lane_detector" pkg="lane_detector" type="lane_detector_node" output="screen" cwd="node">
         <param name="birdview_width" value="480" />
         <param name="birdview_height" value="640" />
-        <param name="skyline" value="150" />
-        <param name="birdview_bottom_delta" value="210" />
+        <param name="skyline" value="300" />
+        <param name="birdview_bottom_delta" value="105" />
     </node>  
 
     <node name="navigation" pkg="navigation" type="navigation_node" output="screen" cwd="node">

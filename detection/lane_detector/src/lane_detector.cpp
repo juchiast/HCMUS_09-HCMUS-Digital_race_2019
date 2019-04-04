@@ -51,8 +51,15 @@ void LaneDetector::updateDepthImage(const Mat &depthImage)
 void LaneDetector::detect()
 {
     cv::Mat depthMask;
-    cv::inRange(depthImage, cv::Scalar(0), cv::Scalar(5000), depthMask); 
-    
+    cv::inRange(depthImage, cv::Scalar(0), cv::Scalar(2000), depthMask); 
+    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3,3));
+    cv::Mat morph;
+    cv::morphologyEx(depthMask, morph, cv::MORPH_CLOSE, kernel);
+    depthMask = morph;
+
+    depthMask(cv::Rect(depthMask.cols-30, 0, 30, depthMask.rows * 0.8)) = cv::Scalar(0);
+    depthMask(cv::Rect(0, 0, 30, depthMask.rows * 0.8)) = cv::Scalar(0);
+
     cv::Mat filteredImage;
     colorImage.copyTo(filteredImage, depthMask);
     cv::imshow("Filtered", filteredImage);

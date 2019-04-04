@@ -38,7 +38,6 @@ catkin_package(
  INCLUDE_DIRS include
  LIBRARIES navigation
  CATKIN_DEPENDS cds_msgs roscpp std_msgs
- DEPENDS system_lib
 )
 
 ###########

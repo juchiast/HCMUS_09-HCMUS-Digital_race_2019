@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 add_message_files(
+  DIRECTORY msg
   FILES
   LandMark.msg
   Lane.msg
@@ -20,12 +21,5 @@ generate_messages(
 )
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES cds_msgs
  CATKIN_DEPENDS std_msgs 
- DEPENDS system_lib
-)
-
-include_directories(
-  ${catkin_INCLUDE_DIRS}
 )

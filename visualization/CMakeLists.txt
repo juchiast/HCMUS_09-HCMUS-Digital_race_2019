@@ -16,7 +16,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
-find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV 3 REQUIRED)
 
 ###################################
@@ -32,7 +31,6 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES visualization
  CATKIN_DEPENDS cds_msgs cv_bridge image_transport roscpp std_msgs
- DEPENDS system_lib
 )
 
 ###########

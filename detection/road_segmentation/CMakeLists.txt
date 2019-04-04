@@ -32,7 +32,6 @@ catkin_package(
  INCLUDE_DIRS include
  LIBRARIES road_segmentation
  CATKIN_DEPENDS roscpp std_msgs
- DEPENDS system_lib
 )
 
 ###########

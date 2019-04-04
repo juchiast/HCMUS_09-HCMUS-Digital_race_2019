@@ -17,11 +17,14 @@
     </node>  
 
     <node name="navigation" pkg="navigation" type="navigation_node" output="screen" cwd="node">
-        <!-- <param name="sub_camera_topic" value="/camera/rgb/image_raw" /> -->
-        <!-- <param name="pub_lane_topic" value="/lane_detected" /> -->
+        <param name="DEF_VELOCITY" value="25" />
+        <param name="MIN_VELOCITY" value="10" />
+        <param name="MAX_VELOCITY" value="40" />
     </node>  
 
-    <node name="system" pkg="system" type="system_node" />
+    <node name="system" pkg="system" type="system_node">
+        <param name="autostart" value="true" type="bool" />
+    </node>
 
     <!-- <node name="road_segmentation" pkg="road_segmentation" type="road_segmentation_node" output="screen" args="_image_transport:=compressed" cwd="node">
         <param name="sub_camera_topic" value="/camera/rgb/image_raw" />

@@ -37,9 +37,24 @@ vector<bool> LaneDetector::getRightTurn()
     return rightTurn;
 }
 
-void LaneDetector::detect(const Mat &src)
+void LaneDetector::updateColorImage(const Mat &colorImage){
+    this->colorImage = colorImage;
+}
+
+void LaneDetector::updateDepthImage(const Mat &depthImage)
 {
-    Mat img = preProcess(src);
+    this->depthImage = depthImage;
+}
+
+void LaneDetector::detect()
+{
+    cv::Mat depthMask;
+    cv::inRange(depthImage, cv::Scalar(0,0,0), cv::Scalar(250, 250, 250), depthMask); 
+    
+    cv::Mat filteredImage;
+    colorImage.copyTo(filteredImage, depthMask);
+    cv::imshow("Filtered", filteredImage);
+    Mat img = preProcess(filteredImage);
 
     cv::Mat visualization;
     cv::cvtColor(img, visualization, cv::COLOR_GRAY2BGR);
@@ -52,23 +67,21 @@ void LaneDetector::detect(const Mat &src)
 
     detectLeftRight(visualization, centroidPoints);
 
-    int laneThreshold = 5;
-    if (leftLane.size() < laneThreshold)
+    // post processing
+    int numPoints = BIRDVIEW_HEIGHT / slideThickness;
+    if (countNonNull(leftLane) < 5)
     {
-        for (int i = 0; i < leftLane.size(); i++)
-        {
-            leftLane[i] = null;
-        }
+        leftLane = vector<cv::Point>(numPoints, null); // it should mark as lost
+    }
+    if (countNonNull(rightLane) < 5)
+    {
+        rightLane = vector<cv::Point>(numPoints, null);
     }
 
-    if (rightLane.size() < laneThreshold)
+    if ((isLaneNull(leftLane) && isRightCurve(rightLane)) || isLaneNull(rightLane) && isLeftCurve(leftLane))
     {
-        for (int i = 0; i < rightLane.size(); i++)
-        {
-            rightLane[i] = null;
-        }
+        std::swap(leftLane, rightLane);
     }
-
 
     visualizeLanes(visualization);
 
@@ -78,7 +91,6 @@ void LaneDetector::detect(const Mat &src)
 
 
     cv::imshow("Lane detection", visualization);
-    cv::waitKey(0);
 }
 
 Mat LaneDetector::preProcess(const Mat &src)
@@ -93,6 +105,25 @@ Mat LaneDetector::preProcess(const Mat &src)
         Scalar(maxThreshold[0], maxThreshold[1], maxThreshold[2]),
         imgThresholded);
     imshow("Binary", imgThresholded);
+
+    // cv::Mat element = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(3,3));
+    // cv::Mat skel = cv::Mat::zeros(imgThresholded.size(), CV_8UC1);
+    // bool done;
+    // cv::Mat temp;
+    // do
+    // {
+    //     cv::morphologyEx(imgThresholded, temp, cv::MORPH_OPEN, element);
+    //     cv::bitwise_not(temp, temp);
+    //     cv::bitwise_and(imgThresholded, temp, temp);
+    //     cv::bitwise_or(skel, temp, skel);
+    //     cv::erode(imgThresholded, imgThresholded, element);
+    //     double max = 0;
+    //     cv::minMaxLoc(imgThresholded, 0, &max);
+    //     done = (max == 0);
+    // } while (!done);
+    
+    // cv::imshow("Skeleton", skel);
+
     dst = birdViewTranform(imgThresholded);
     // dst = imgThresholded;
 
@@ -165,8 +196,12 @@ std::vector<std::vector<cv::Point> > LaneDetector::findLayerCentroids(const std:
 
         for (const auto& contour : contours)
         {
-            int area = contourArea(contour, false);
-            if (area > 10) {
+            cv::Rect bounding = cv::boundingRect(contour);
+            // int area = contourArea(contour, false);
+            // if (area > 10) {
+            float ratio = bounding.width * 1.0f / bounding.height;
+            if (bounding.area() > 10 && ratio > 0.8 && ratio < 1.8)
+            {
                 Moments M1 = moments(contour, false);
                 Point2f centroid = Point2f(static_cast<float> (M1.m10 / M1.m00), static_cast<float> (M1.m01 / M1.m00));
                 centroid.y += slideThickness * i;
@@ -321,26 +356,13 @@ void LaneDetector::detectLeftRight(cv::Mat visualization, const vector<vector<Po
             rightLane[floor(lane1[i].y / slideThickness)] = lane1[i];
         }
     }
-
-    // post processing
-    // if (countNonNull(leftLane) < 5)
-    // {
-    //     leftLane = vector<cv::Point>(numPoints, null); // it should mark as lost
-    // }
-    // if (countNonNull(rightLane) < 5)
-    // {
-    //     rightLane = vector<cv::Point>(numPoints, null);
-    // }
-
-    // if ((isLaneNull(leftLane) && isRightCurve(rightLane)) || isLaneNull(rightLane) && isLeftCurve(leftLane))
-    // {
-    //     std::swap(leftLane, rightLane);
-    // }
 }
 
 bool LaneDetector::isLaneNull(const LanePoint& points) const
 {
-    return countNonNull(points) == 0;
+    return std::all_of(points.begin(), points.end(), [](const cv::Point& point) {
+        return point == null;
+    });
 }
 
 std::vector<bool> LaneDetector::findTurnable(const std::vector<cv::Point>& lane, cv::Mat visualization)

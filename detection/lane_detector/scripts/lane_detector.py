@@ -13,22 +13,27 @@ BIRDVIEW_BOTTOM_DELTA = 105
 FRAME_WIDTH = 320
 FRAME_HEIGHT = 240
 
-src_points = np.float32([
-    [0, SKYLINE],
-    [FRAME_WIDTH, SKYLINE],
-    [FRAME_WIDTH, FRAME_HEIGHT],
-    [0, FRAME_HEIGHT]
-])
+def on_change_skyline(new_val):
+    global SKYLINE
+    SKYLINE = new_val
 
-dst_points = np.float32([
-    [0, 0],
-    [BIRDVIEW_WIDTH, 0],
-    [BIRDVIEW_WIDTH - BIRDVIEW_BOTTOM_DELTA, BIRDVIEW_HEIGHT],
-    [BIRDVIEW_BOTTOM_DELTA, BIRDVIEW_HEIGHT]
-])
+def on_change_delta(new_val):
+    global BIRDVIEW_BOTTOM_DELTA
+    BIRDVIEW_BOTTOM_DELTA = new_val
 
-M = cv2.getPerspectiveTransform(src_points, dst_points)
-M_inv = cv2.getPerspectiveTransform(dst_points, src_points)
+def on_change_birdwidth(new_val):
+    global BIRDVIEW_WIDTH
+    BIRDVIEW_WIDTH = new_val
+
+def on_change_birdheight(new_val):
+    global BIRDVIEW_HEIGHT
+    BIRDVIEW_HEIGHT = new_val
+
+cv2.namedWindow("config")
+cv2.createTrackbar("skyline", "config", SKYLINE, 300, on_change_skyline)
+cv2.createTrackbar("delta", "config", BIRDVIEW_BOTTOM_DELTA, 300, on_change_delta)
+cv2.createTrackbar("birdwidth", "config", BIRDVIEW_WIDTH, 300, on_change_birdwidth)
+cv2.createTrackbar("birdheight", "config", BIRDVIEW_HEIGHT, 300, on_change_birdheight)
 
 # class Lane():
 #     def __init__(self):
@@ -595,6 +600,24 @@ def find_edges(image):
     return binary
 
 def birdview_transform(image):
+
+    src_points = np.float32([
+        [0, SKYLINE],
+        [FRAME_WIDTH, SKYLINE],
+        [FRAME_WIDTH, FRAME_HEIGHT],
+        [0, FRAME_HEIGHT]
+    ])
+
+    dst_points = np.float32([
+        [0, 0],
+        [BIRDVIEW_WIDTH, 0],
+        [BIRDVIEW_WIDTH, BIRDVIEW_HEIGHT],
+        [BIRDVIEW_BOTTOM_DELTA, BIRDVIEW_HEIGHT]
+    ])
+
+    M = cv2.getPerspectiveTransform(src_points, dst_points)
+    M_inv = cv2.getPerspectiveTransform(dst_points, src_points)
+
     result = cv2.warpPerspective(image, M, (BIRDVIEW_WIDTH, BIRDVIEW_HEIGHT))
     return result
 
@@ -607,11 +630,10 @@ def process_frame(img, visualization=False):
     # binary_warped = warper(img_binary, M)  # get binary image contains edges
     img = birdview_transform(img_binary)
 
-    lines = cv2.HoughLinesP(src, 1, cv2.PI/180, 1)
+    lines = cv2.HoughLinesP(img, 1, np.pi/180, 1)
     for line in lines:
-        Vec4i l = lines[i];
-        line(src, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(255), 3, CV_AA);
-
+        l = line[0]
+        cv2.line(img, (l[0], l[1]), (l[2], l[3]), (255), 3)
 
     cv2.imshow("birdview", img)
     cv2.waitKey(1)

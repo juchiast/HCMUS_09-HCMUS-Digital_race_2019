@@ -13,6 +13,8 @@ int LaneDetector::BIRDVIEW_BOTTOM_DELTA = 50;
 Point LaneDetector::null = Point();
 
 LaneDetector::LaneDetector() {
+    colorImage = cv::Mat::zeros(cv::Size(640,480), CV_8UC3);
+    depthImage = cv::Mat::zeros(cv::Size(640,480), CV_16UC1);
 }
 
 LaneDetector::~LaneDetector(){}
@@ -49,7 +51,7 @@ void LaneDetector::updateDepthImage(const Mat &depthImage)
 void LaneDetector::detect()
 {
     cv::Mat depthMask;
-    cv::inRange(depthImage, cv::Scalar(0,0,0), cv::Scalar(250, 250, 250), depthMask); 
+    cv::inRange(depthImage, cv::Scalar(0), cv::Scalar(5000), depthMask); 
     
     cv::Mat filteredImage;
     colorImage.copyTo(filteredImage, depthMask);
@@ -91,6 +93,7 @@ void LaneDetector::detect()
 
 
     cv::imshow("Lane detection", visualization);
+    cv::waitKey(1);
 }
 
 Mat LaneDetector::preProcess(const Mat &src)

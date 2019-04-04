@@ -68,7 +68,6 @@ static void imageCallback(const sensor_msgs::ImageConstPtr& msg)
         cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
         laneDetector.updateColorImage(cv_ptr->image);
-        cv::waitKey(1);
 
     }
     catch (cv_bridge::Exception& e)
@@ -86,10 +85,8 @@ static void depthImageCallback(const sensor_msgs::ImageConstPtr& msg)
     cv_bridge::CvImagePtr cv_ptr;
     try
     {
-        cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-
+        cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::TYPE_16UC1);
         laneDetector.updateDepthImage(cv_ptr->image);
-        cv::waitKey(1);
     }
     catch (cv_bridge::Exception& e)
     {
@@ -108,9 +105,8 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
 
 
-    image_transport::ImageTransport it(nh);
-    image_transport::Subscriber sub = it.subscribe("/camera/rgb/image_raw", 1, imageCallback);
-    image_transport::Subscriber subdepth = it.subscribe("/camera/depth/image_raw", 1, depthImageCallback);
+    ros::Subscriber sub = nh.subscribe("/camera/rgb/image_raw", 1, imageCallback);
+    ros::Subscriber subdepth = nh.subscribe("/camera/depth/image_raw", 1, depthImageCallback);
 
 
 

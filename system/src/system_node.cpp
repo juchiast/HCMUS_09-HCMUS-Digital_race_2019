@@ -138,8 +138,8 @@ int main(int argc, char** argv)
     publisher = nh.advertise<cds_msgs::System>("/system", 10);
     lcd_publisher = nh.advertise<std_msgs::String>("/lcd_print", 10);
 
-
-    systemMsg.isStop.data = true;
+    bool autostart = nh.param("autostart", false);
+    systemMsg.isStop.data = isForceStop = !autostart;
 
     ros::Rate rate{30};
     while (ros::ok())

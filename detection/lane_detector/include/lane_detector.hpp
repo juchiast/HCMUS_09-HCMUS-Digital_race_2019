@@ -18,8 +18,10 @@ public:
     LaneDetector();
     ~LaneDetector();
 
-    void detect(const cv::Mat &src);
-    
+    void detect();
+    void updateColorImage(const cv::Mat & colorImage);
+    void updateDepthImage(const cv::Mat & depthImage);
+
     std::vector<cv::Point> getLeftLane();
     std::vector<cv::Point> getRightLane();
     std::vector<bool> getLeftTurn();
@@ -63,6 +65,8 @@ private:
     int binaryThreshold = 180;
 
     int shadowParam = 40;
+
+    cv::Mat depthImage, colorImage;
 
     LanePoint leftLane, rightLane;
     std::vector<bool> leftTurn, rightTurn;

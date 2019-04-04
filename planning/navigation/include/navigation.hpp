@@ -30,10 +30,14 @@ public:
     float getSpeed();
     float getSteer();
 
+    void visualize();
+    
+    Lane approximateLeftLane(const Lane& rightLane);
+    Lane approximateRightLane(const Lane& leftLane);
+
 
     cv::Point carDir;
     float theta;
-
 
     static int MIN_VELOCITY;
     static int MAX_VELOCITY;
@@ -63,7 +67,7 @@ private:
     float currentSpeed;
     float currentSteer;
 
-
+    cv::Mat visualizeImage;
     static const cv::Point carPos;
     static const cv::Point distanceNearLaneLine;
 };

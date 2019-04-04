@@ -168,8 +168,18 @@ int main(int argc, char **argv)
     // ros::Subscriber decSpeedSub = nh.subscribe("/bt2_status", 10, decreaseSpeedCallback);
     // ros::Subscriber incSpeedSub = nh.subscribe("/bt3_status", 10, decreaseSpeedCallback);
 
+    Navigation::DEF_VELOCITY = nh.param("/navigation/DEF_VELOCITY", 8);
+    Navigation::MIN_VELOCITY = nh.param("/navigation/MIN_VELOCITY", 5);
+    Navigation::MAX_VELOCITY = nh.param("/navigation/MAX_VELOCITY", 30);
+
+    ROS_INFO("DEF_VELOCITY = %d", Navigation::DEF_VELOCITY);
+    ROS_INFO("MIN_VELOCITY = %d", Navigation::MIN_VELOCITY);
+    ROS_INFO("MAX_VELOCITY = %d", Navigation::MAX_VELOCITY);
+
     speedPublisher = nh.advertise<std_msgs::Float32>("/set_speed_car_api", 10);
     steerPublisher = nh.advertise<std_msgs::Float32>("/set_steer_car_api", 10);
+
+    ROS_INFO("navigation node started");
 
     ros::Rate rate{50};
     while (ros::ok())
@@ -180,11 +190,12 @@ int main(int argc, char **argv)
         {
             publishSpeed(0);
             publishSteer(0);
-        } else if (shouldTurn)
-        {
-            publishWhenTurning();
         } else 
+        // if (shouldTurn)
         {
+        //     publishWhenTurning();
+        // } else 
+        // {
             publishSpeed(navigation.getSpeed());
             publishSteer(navigation.getSteer());
         }

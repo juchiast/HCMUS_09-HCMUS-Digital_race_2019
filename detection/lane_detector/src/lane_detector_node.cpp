@@ -67,12 +67,29 @@ static void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     {
         cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
-        // cv::Mat scaled;
-        // cv::pyrDown(cv_ptr->image, scaled);
+        laneDetector.updateColorImage(cv_ptr->image);
+        cv::waitKey(1);
 
-        // laneDetector.detect(scaled);
-        laneDetector.detect(cv_ptr->image);
-        publishLane();
+    }
+    catch (cv_bridge::Exception& e)
+    {
+        ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
+    }
+}
+
+static void depthImageCallback(const sensor_msgs::ImageConstPtr& msg)
+{
+    if (isStop)
+    {
+        return;
+    }
+    cv_bridge::CvImagePtr cv_ptr;
+    try
+    {
+        cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+
+        laneDetector.updateDepthImage(cv_ptr->image);
+        cv::waitKey(1);
     }
     catch (cv_bridge::Exception& e)
     {
@@ -93,6 +110,9 @@ int main(int argc, char **argv)
 
     image_transport::ImageTransport it(nh);
     image_transport::Subscriber sub = it.subscribe("/camera/rgb/image_raw", 1, imageCallback);
+    image_transport::Subscriber subdepth = it.subscribe("/camera/depth/image_raw", 1, depthImageCallback);
+
+
 
     ros::Subscriber systemSub = nh.subscribe("/system", 1, systemCallback);
 
@@ -124,7 +144,18 @@ int main(int argc, char **argv)
 
     ROS_INFO("lane_detector node started");
 
-    ros::spin();
+
+    ros::Rate rate{30};
+    while (ros::ok())
+    {
+        ros::spinOnce();
+        if (!isStop)
+        {
+            laneDetector.detect();
+            publishLane();
+        }
+        rate.sleep();
+    }
 
     cv::destroyAllWindows();
 }

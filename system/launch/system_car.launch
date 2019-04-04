@@ -1,0 +1,40 @@
+<launch>
+    <node name="traffic_sign_detector" pkg="traffic_sign_detector" type="traffic_sign_detector_node" output="screen" args="_image_transport:=compressed" cwd="node">
+        <param name="left_image_path" value="$(find traffic_sign_detector)/images/left.png" />
+        <param name="right_image_path" value="$(find traffic_sign_detector)/images/right.png" />
+    </node>  
+
+    <node name="lane_detector" pkg="lane_detector" type="lane_detector_node" output="screen" cwd="node">
+        <param name="birdview_width" value="480" />
+        <param name="birdview_height" value="640" />
+        <param name="skyline" value="300" />
+        <param name="birdview_bottom_delta" value="105" />
+    </node>  
+
+    <node name="navigation" pkg="navigation" type="navigation_node" output="screen" cwd="node">
+        <param name="DEF_VELOCITY" value="8" />
+        <param name="MIN_VELOCITY" value="5" />
+        <param name="MAX_VELOCITY" value="30" />
+    </node>
+
+    <!-- Speed and steer  -->
+    <node name="car_controller" pkg="car_controller" type="car_controller_node" />
+
+
+    <!-- Handle message for all system -->
+    <node name="system" pkg="system" type="system_node">
+        <param name="autostart" value="false" type="bool" />
+    </node>
+
+    <!-- Button 1,2,3,4, LCD, sensor... -->
+    <node name="hal" pkg="hal" type="hal_node" />
+    
+    <!-- Camera -->
+    <include file="$(find astra_launch)/launch/astrapro.launch" />
+
+
+    <!-- <node name="road_segmentation" pkg="road_segmentation" type="road_segmentation_node" output="screen" args="_image_transport:=compressed" cwd="node">
+        <param name="sub_camera_topic" value="/camera/rgb/image_raw" />
+        <param name="pub_road_topic" value="/road_segmentation/image_raw" />
+    </node>   -->
+</launch>

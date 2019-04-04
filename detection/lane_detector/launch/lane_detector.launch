@@ -1,0 +1,6 @@
+<launch>
+    <node name="lane_detector" pkg="lane_detector" type="lane_detector_node" output="screen" args="_image_transport:=compressed" cwd="node">
+        <param name="sub_camera_topic" value="/camera/rgb/image_raw" />
+        <param name="pub_lane_topic" value="/lane_detected" />
+    </node>  
+</launch>

@@ -85,8 +85,8 @@ void SignDetector::detect(cv::Mat frame)
   std::vector<std::vector<cv::Point>> contours_poly(contours.size());
   std::vector<cv::Rect> boundRect(contours.size());
 
-  cv::Mat drawing;
-  cv::cvtColor(binary, drawing, cv::COLOR_GRAY2BGR);
+  // cv::Mat drawing;
+  // cv::cvtColor(binary, drawing, cv::COLOR_GRAY2BGR);
 
   double maxPercent = 0;
   size_t i_max = -1;
@@ -136,8 +136,8 @@ void SignDetector::detect(cv::Mat frame)
 
   if (maxPercent >= 0.80)
   {
-    cv::Scalar color = max_type == -1 ? cv::Scalar(0, 0, 255) : cv::Scalar(255, 0, 0);
-    cv::rectangle(drawing, boundRect[i_max], color, 2, 8, 0);
+    // cv::Scalar color = max_type == -1 ? cv::Scalar(0, 0, 255) : cv::Scalar(255, 0, 0);
+    // cv::rectangle(drawing, boundRect[i_max], color, 2, 8, 0);
     this->signTypeDetected.id = max_type == -1 ? TrafficSign::Left : TrafficSign::Right;
     this->signTypeDetected.confident = maxPercent;
     this->signTypeDetected.boundingBox = boundRect[i_max];
@@ -147,7 +147,7 @@ void SignDetector::detect(cv::Mat frame)
     this->signTypeDetected.id = TrafficSign::None;
   }
 
-  cv::imshow("Drawing....", drawing);
+  // cv::imshow("Drawing....", drawing);
 }
 
 const Sign *SignDetector::getSign() const

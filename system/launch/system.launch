@@ -4,6 +4,9 @@
 		<arg name="port" value="9090" />
     </include>
 
+    <!-- <node name="image_republish" pkg="image_transport" type="image_republish" args="_in:=compressed _out:="> -->
+    <node name="republish" type="republish" pkg="image_transport" output="screen" args="compressed in:=/camera/rgb/image_raw raw out:=/camera/rgb/image_raw" />
+
     <node name="traffic_sign_detector" pkg="traffic_sign_detector" type="traffic_sign_detector_node" output="screen" args="_image_transport:=compressed" cwd="node">
         <param name="left_image_path" value="$(find traffic_sign_detector)/images/left.png" />
         <param name="right_image_path" value="$(find traffic_sign_detector)/images/right.png" />

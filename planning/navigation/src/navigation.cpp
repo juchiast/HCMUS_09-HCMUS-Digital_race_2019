@@ -49,17 +49,39 @@ float Navigation::errorAngle(const Point &dst)
     return atan(dx / dy) * 180 / pi;
 }
 
-void Navigation::update(const Lane &leftLane, const Lane &rightLane)
+void Navigation::update(Lane &leftLane, Lane &rightLane)
 {
-    if (!(isLaneNull(leftLane) && isLaneNull(rightLane)))
-    {
-        this->leftLane = leftLane;
-        this->rightLane = rightLane;
-    } else if (isLaneNull(leftLane) && isLaneNull(rightLane))
+    if (isLaneNull(leftLane) && isLaneNull(rightLane))
     {
         // LANE NOT FOUND!!!!
         ROS_INFO("LANE NOT FOUND!");
-    } else if (isLaneNull(leftLane))
+        return;
+    } 
+
+    auto approx_left = approximateLeftLane(rightLane);
+    auto approx_right = approximateRightLane(leftLane);
+
+    for (int i = 0; i < leftLane.size(); i++)
+    {
+        if (leftLane[i] == null) {
+            leftLane[i] = approx_left[i];
+        }
+    }
+
+    for (int i = 0; i < rightLane.size(); i++)
+    {
+        if (rightLane[i] == null) {
+            rightLane[i] = approx_right[i];
+        }
+    }
+
+    if (!isLaneNull(leftLane) && !isLaneNull(rightLane))
+    {
+        this->leftLane = leftLane;
+        this->rightLane = rightLane;
+    } 
+    
+    if (isLaneNull(leftLane))
     {
         this->leftLane = approximateLeftLane(rightLane);
         this->rightLane = rightLane;
@@ -150,8 +172,8 @@ void Navigation::turnRight()
     }
 
 
-    auto leftLane_approx = approximateLeftLane(rightLane);
-    currentSteer = errorAngle((leftLane[i] + leftLane_approx[i])/2);
+    leftLane = approximateLeftLane(rightLane);
+    currentSteer = errorAngle((leftLane[i] + leftLane[i])/2);
 
 
     // if (!rightTurn[i])
@@ -173,9 +195,10 @@ void Navigation::turnLeft()
         return;
     }
 
-    auto rightLane_approx = approximateRightLane(leftLane);
+    rightLane = approximateRightLane(leftLane);
+
     
-    currentSteer = errorAngle((leftLane[i] + rightLane_approx[i])/2);
+    currentSteer = errorAngle((leftLane[i] + rightLane[i])/2);
 
     // if (!leftTurn[i])
     // {
@@ -233,7 +256,7 @@ bool Navigation::isTurning() const
 
 Navigation::Lane Navigation::approximateLeftLane(const Navigation::Lane& rightLane)
 {
-    Navigation::Lane lane;
+    Navigation::Lane lane(rightLane.size(), null);
     for (int i = 0; i < rightLane.size() - 1; i++)
     {
         if (rightLane[i] == null || rightLane[i+1] == null) continue;
@@ -247,14 +270,14 @@ Navigation::Lane Navigation::approximateLeftLane(const Navigation::Lane& rightLa
         cv::Point2f rightLaneFloat = {rightLane[i].x *1.0f, rightLane[i].y * 1.0f};
         cv::Point2f estimate = rightLaneFloat + perdepencular * LANE_WIDTH;
         cv::Point estimateRound(std::round(estimate.x),  std::round(estimate.y));
-        lane.push_back(estimate);
+        lane[i] = estimate;
     }
     return lane;
 }
 
 Navigation::Lane Navigation::approximateRightLane(const Navigation::Lane& leftLane)
 {
-    Navigation::Lane lane;
+    Navigation::Lane lane(leftLane.size(), null);
     for (int i = 0; i < leftLane.size() - 1; i++)
     {
         if (leftLane[i] == null || leftLane[i+1] == null) continue;
@@ -268,7 +291,7 @@ Navigation::Lane Navigation::approximateRightLane(const Navigation::Lane& leftLa
         cv::Point2f leftLaneFloat = {leftLane[i].x *1.0f, leftLane[i].y * 1.0f};
         cv::Point2f estimate = leftLaneFloat + perdepencular * LANE_WIDTH;
         cv::Point estimateRound(std::round(estimate.x),  std::round(estimate.y));
-        lane.push_back(estimate);
+        lane[i] = estimate;
     }
     return lane;
 }

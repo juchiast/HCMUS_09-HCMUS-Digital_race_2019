@@ -24,7 +24,7 @@ public:
     
     Navigation();
 
-    void update(const Lane& leftLane, const Lane& rightLane);
+    void update(Lane& leftLane, Lane& rightLane);
     void update(const TurningFlags& leftTurnFlags, const TurningFlags& rightTurnFlags);
     void update(const SignDetected& sign);
     float getSpeed();

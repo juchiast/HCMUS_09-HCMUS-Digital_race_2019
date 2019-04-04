@@ -198,6 +198,7 @@ int main(int argc, char **argv)
         // {
             publishSpeed(navigation.getSpeed());
             publishSteer(navigation.getSteer());
+            navigation.visualize();
         }
 
 

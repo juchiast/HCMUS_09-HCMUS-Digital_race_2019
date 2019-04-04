@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 
 
     ros::Subscriber sub = nh.subscribe("/camera/rgb/image_raw", 1, imageCallback);
-    ros::Subscriber subdepth = nh.subscribe("/camera/depth/image_raw", 1, depthImageCallback);
+    // ros::Subscriber subdepth = nh.subscribe("/camera/depth/image_raw", 1, depthImageCallback);
 
 
 

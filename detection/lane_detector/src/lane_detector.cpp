@@ -50,20 +50,21 @@ void LaneDetector::updateDepthImage(const Mat &depthImage)
 
 void LaneDetector::detect()
 {
-    cv::Mat depthMask;
-    cv::inRange(depthImage, cv::Scalar(0), cv::Scalar(2000), depthMask); 
-    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3,3));
-    cv::Mat morph;
-    cv::morphologyEx(depthMask, morph, cv::MORPH_CLOSE, kernel);
-    depthMask = morph;
+    // cv::Mat depthMask;
+    // cv::inRange(depthImage, cv::Scalar(0), cv::Scalar(2000), depthMask); 
+    // cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3,3));
+    // cv::Mat morph;
+    // cv::morphologyEx(depthMask, morph, cv::MORPH_CLOSE, kernel);
+    // depthMask = morph;
 
-    depthMask(cv::Rect(depthMask.cols-30, 0, 30, depthMask.rows * 0.8)) = cv::Scalar(0);
-    depthMask(cv::Rect(0, 0, 30, depthMask.rows * 0.8)) = cv::Scalar(0);
+    // depthMask(cv::Rect(depthMask.cols-30, 0, 30, depthMask.rows * 0.8)) = cv::Scalar(0);
+    // depthMask(cv::Rect(0, 0, 30, depthMask.rows * 0.8)) = cv::Scalar(0);
 
-    cv::Mat filteredImage;
-    colorImage.copyTo(filteredImage, depthMask);
-    cv::imshow("Filtered", filteredImage);
-    Mat img = preProcess(filteredImage);
+    // cv::Mat filteredImage;
+    // colorImage.copyTo(filteredImage, depthMask);
+    // cv::imshow("Filtered", filteredImage);
+    
+    Mat img = preProcess(colorImage);
 
     cv::Mat visualization;
     cv::cvtColor(img, visualization, cv::COLOR_GRAY2BGR);
@@ -206,11 +207,11 @@ std::vector<std::vector<cv::Point> > LaneDetector::findLayerCentroids(const std:
 
         for (const auto& contour : contours)
         {
-            cv::Rect bounding = cv::boundingRect(contour);
+            // cv::Rect bounding = cv::boundingRect(contour);
             // int area = contourArea(contour, false);
             // if (area > 10) {
-            float ratio = bounding.width * 1.0f / bounding.height;
-            if (bounding.area() > 10 && ratio > 0.8 && ratio < 1.8)
+            // float ratio = bounding.width * 1.0f / bounding.height;
+            // if (bounding.area() > 10 && ratio > 0.8 && ratio < 1.8)
             {
                 Moments M1 = moments(contour, false);
                 Point2f centroid = Point2f(static_cast<float> (M1.m10 / M1.m00), static_cast<float> (M1.m01 / M1.m00));

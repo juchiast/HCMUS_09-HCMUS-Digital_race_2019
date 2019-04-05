@@ -9,12 +9,18 @@ int LaneDetector::BIRDVIEW_WIDTH = 240;
 int LaneDetector::BIRDVIEW_HEIGHT = 320;
 int LaneDetector::SKYLINE = 120;
 int LaneDetector::BIRDVIEW_BOTTOM_DELTA = 50;
+static int depthLow = 700;
+static int depthHigh = 1500;
 
 Point LaneDetector::null = Point();
 
 LaneDetector::LaneDetector() {
     colorImage = cv::Mat::zeros(cv::Size(640,480), CV_8UC3);
     depthImage = cv::Mat::zeros(cv::Size(640,480), CV_16UC1);
+    cv::namedWindow("config");
+
+    cv::createTrackbar("depthLow", "config", &depthLow, 5000);
+    cv::createTrackbar("depthHigh", "config", &depthHigh, 5000);
 }
 
 LaneDetector::~LaneDetector(){}
@@ -117,6 +123,19 @@ Mat LaneDetector::preProcess(const Mat &src)
         imgThresholded);
     imshow("Binary", imgThresholded);
 
+    cv::imshow("DepthImage", depthImage);
+
+    cv::Mat depthThreshold;
+    inRange(depthImage, Scalar(depthLow), Scalar(depthHigh), depthThreshold);
+    int height = 0.7 * depthThreshold.rows;
+    depthThreshold(cv::Rect(0, height, depthThreshold.cols, depthThreshold.rows - height)) = Scalar(0);
+    // cv::imshow("DepthThreshold", depthThreshold);
+
+    cv::Mat filtered;
+    colorImage.copyTo(filtered, depthThreshold);
+    // cv::imshow("Filtered", filtered);
+
+
     // cv::Mat element = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(3,3));
     // cv::Mat skel = cv::Mat::zeros(imgThresholded.size(), CV_8UC1);
     // bool done;
@@ -136,6 +155,8 @@ Mat LaneDetector::preProcess(const Mat &src)
     // cv::imshow("Skeleton", skel);
 
     dst = birdViewTranform(imgThresholded);
+    cv::Mat depthBirdview = birdViewTranform(depthImage);
+    cv::imshow("DepthBirdview", depthBirdview);
     // dst = imgThresholded;
 
     fillLane(dst);

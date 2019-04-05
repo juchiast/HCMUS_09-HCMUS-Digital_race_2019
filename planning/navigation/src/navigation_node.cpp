@@ -181,7 +181,7 @@ int main(int argc, char **argv)
 
     ROS_INFO("navigation node started");
 
-    ros::Rate rate{50};
+    ros::Rate rate{10};
     while (ros::ok())
     {
         ros::spinOnce();

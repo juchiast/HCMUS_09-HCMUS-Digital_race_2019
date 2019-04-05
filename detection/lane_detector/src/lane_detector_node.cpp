@@ -148,7 +148,7 @@ int main(int argc, char **argv)
     ROS_INFO("lane_detector node started");
 
 
-    ros::Rate rate{30};
+    ros::Rate rate{10};
     while (ros::ok())
     {
         ros::spinOnce();

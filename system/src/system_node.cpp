@@ -141,7 +141,7 @@ int main(int argc, char** argv)
     bool autostart = nh.param("autostart", false);
     systemMsg.isStop.data = isForceStop = !autostart;
 
-    ros::Rate rate{30};
+    ros::Rate rate{10};
     while (ros::ok())
     {
         ros::spinOnce();

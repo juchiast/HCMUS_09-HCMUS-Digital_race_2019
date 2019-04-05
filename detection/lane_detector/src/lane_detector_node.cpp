@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 
 
     ros::Subscriber sub = nh.subscribe("/camera/rgb/image_raw", 1, imageCallback);
-    // ros::Subscriber subdepth = nh.subscribe("/camera/depth/image_raw", 1, depthImageCallback);
+    ros::Subscriber subdepth = nh.subscribe("/camera/depth/image_raw", 1, depthImageCallback);
 
 
 
@@ -138,10 +138,17 @@ int main(int argc, char **argv)
 
     lanePublisher = nh.advertise<cds_msgs::Lane>("lane_detected", 10);
 
+    cv::namedWindow("config_lane");
+
+    cv::createTrackbar("skyline", "config_lane", &LaneDetector::SKYLINE, 480);
+    cv::createTrackbar("birdview width", "config_lane", &LaneDetector::BIRDVIEW_WIDTH, 640);
+    cv::createTrackbar("birdview height", "config_lane", &LaneDetector::BIRDVIEW_HEIGHT, 640);
+    cv::createTrackbar("delta_width", "config_lane", &LaneDetector::BIRDVIEW_BOTTOM_DELTA, 640);
+
     ROS_INFO("lane_detector node started");
 
 
-    ros::Rate rate{30};
+    ros::Rate rate{10};
     while (ros::ok())
     {
         ros::spinOnce();
@@ -150,6 +157,7 @@ int main(int argc, char **argv)
             laneDetector.detect();
             publishLane();
         }
+        cv::waitKey(1);
         rate.sleep();
     }
 

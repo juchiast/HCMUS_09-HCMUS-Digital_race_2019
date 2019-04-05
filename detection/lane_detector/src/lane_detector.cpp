@@ -123,16 +123,21 @@ Mat LaneDetector::preProcess(const Mat &src)
         imgThresholded);
     imshow("Binary", imgThresholded);
 
+    cv::Mat depthMask;
+    inRange(depthImage, Scalar(0), Scalar(3000), depthMask);
+    bitwise_and(depthMask, imgThresholded, imgThresholded);
+    cv::imshow("Binary crop", imgThresholded);
+
     cv::imshow("DepthImage", depthImage);
 
-    cv::Mat depthThreshold;
-    inRange(depthImage, Scalar(depthLow), Scalar(depthHigh), depthThreshold);
-    int height = 0.7 * depthThreshold.rows;
-    depthThreshold(cv::Rect(0, height, depthThreshold.cols, depthThreshold.rows - height)) = Scalar(0);
+    // cv::Mat depthThreshold;
+    // inRange(depthImage, Scalar(depthLow), Scalar(depthHigh), depthThreshold);
+    // int height = 0.7 * depthThreshold.rows;
+    // depthThreshold(cv::Rect(0, height, depthThreshold.cols, depthThreshold.rows - height)) = Scalar(0);
     // cv::imshow("DepthThreshold", depthThreshold);
 
-    cv::Mat filtered;
-    colorImage.copyTo(filtered, depthThreshold);
+    // cv::Mat filtered;
+    // colorImage.copyTo(filtered, depthThreshold);
     // cv::imshow("Filtered", filtered);
 
 
@@ -163,26 +168,6 @@ Mat LaneDetector::preProcess(const Mat &src)
 
     return dst;
 }
-
-// Mat LaneDetector::laneInShadow(const Mat &src)
-// {
-//     Mat shadowMask, shadow, imgHSV, shadowHSV, laneShadow;
-//     cvtColor(src, imgHSV, COLOR_BGR2HSV);
-
-//     inRange(imgHSV, Scalar(minShadowTh[0], minShadowTh[1], minShadowTh[2]),
-//     Scalar(maxShadowTh[0], maxShadowTh[1], maxShadowTh[2]),
-//     shadowMask);
-
-//     src.copyTo(shadow, shadowMask);
-
-//     cvtColor(shadow, shadowHSV, COLOR_BGR2HSV);
-
-//     inRange(shadowHSV, Scalar(minLaneInShadow[0], minLaneInShadow[1], minLaneInShadow[2]),
-//         Scalar(maxLaneInShadow[0], maxLaneInShadow[1], maxLaneInShadow[2]),
-//         laneShadow);
-
-//     return laneShadow;
-// }
 
 void LaneDetector::fillLane(Mat &src)
 {
@@ -229,10 +214,10 @@ std::vector<std::vector<cv::Point> > LaneDetector::findLayerCentroids(const std:
         for (const auto& contour : contours)
         {
             // cv::Rect bounding = cv::boundingRect(contour);
-            // int area = contourArea(contour, false);
-            // if (area > 10) {
+            int area = contourArea(contour, false);
+            if (area > 10)
             // float ratio = bounding.width * 1.0f / bounding.height;
-            // if (bounding.area() > 10 && ratio > 0.8 && ratio < 1.8)
+            // if (bounding.area() > 10)
             {
                 Moments M1 = moments(contour, false);
                 Point2f centroid = Point2f(static_cast<float> (M1.m10 / M1.m00), static_cast<float> (M1.m01 / M1.m00));

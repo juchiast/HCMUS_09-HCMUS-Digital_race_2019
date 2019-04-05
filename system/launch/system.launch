@@ -7,23 +7,23 @@
     <node name="republish_rgb" type="republish" pkg="image_transport" output="screen" args="compressed in:=/camera/rgb/image_raw raw out:=/camera/rgb/image_raw" />
     <node name="republish_depth" type="republish" pkg="image_transport" output="screen" args="compressed in:=/camera/depth/image_raw raw out:=/camera/depth/image_raw" />
 
-    <!-- <node name="traffic_sign_detector" pkg="traffic_sign_detector" type="traffic_sign_detector_node" output="screen" args="_image_transport:=compressed" cwd="node">
+    <node name="traffic_sign_detector" pkg="traffic_sign_detector" type="traffic_sign_detector_node" output="screen" args="_image_transport:=compressed" cwd="node">
         <param name="left_image_path" value="$(find traffic_sign_detector)/images/left.png" />
         <param name="right_image_path" value="$(find traffic_sign_detector)/images/right.png" />
-    </node>   -->
+    </node>  
 
-    <!-- <node name="lane_detector" pkg="lane_detector" type="lane_detector_node" output="screen" args="_image_transport:=compressed" cwd="node">
+    <node name="lane_detector" pkg="lane_detector" type="lane_detector_node" output="screen" args="_image_transport:=compressed" cwd="node">
         <param name="birdview_width" value="240" />
         <param name="birdview_height" value="320" />
         <param name="skyline" value="85" />
         <param name="birdview_bottom_delta" value="105" />
-    </node>   -->
+    </node>  
 
-    <!-- <node name="navigation" pkg="navigation" type="navigation_node" output="screen" cwd="node">
+    <node name="navigation" pkg="navigation" type="navigation_node" output="screen" cwd="node">
         <param name="DEF_VELOCITY" value="25" />
         <param name="MIN_VELOCITY" value="10" />
         <param name="MAX_VELOCITY" value="40" />
-    </node>   -->
+    </node>  
 
     <node name="system" pkg="system" type="system_node">
         <param name="autostart" value="true" type="bool" />

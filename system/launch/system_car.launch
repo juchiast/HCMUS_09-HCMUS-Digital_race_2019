@@ -12,8 +12,8 @@
     </node>  
 
     <node name="navigation" pkg="navigation" type="navigation_node" output="screen" cwd="node">
-        <param name="DEF_VELOCITY" value="8" />
-        <param name="MIN_VELOCITY" value="5" />
+        <param name="DEF_VELOCITY" value="15" />
+        <param name="MIN_VELOCITY" value="10" />
         <param name="MAX_VELOCITY" value="30" />
     </node>
 

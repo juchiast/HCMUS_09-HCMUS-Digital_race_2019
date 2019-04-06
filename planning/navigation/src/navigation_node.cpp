@@ -37,8 +37,9 @@ static void increaseSpeedCallback(const std_msgs::Bool& msg)
         if (isIncBtnPressed == true)
         {
             // inc speed
-            Navigation::MIN_VELOCITY += 5;
-            Navigation::DEF_VELOCITY += 5;
+            Navigation::MIN_VELOCITY += 1;
+            Navigation::DEF_VELOCITY += 1;
+            Navigation::DEF_VELOCITY += 1;
         }
         isIncBtnPressed = false;
     }
@@ -55,8 +56,9 @@ static void decreaseSpeedCallback(const std_msgs::Bool& msg)
         if (isDecBtnPressed == true)
         {
             // dec speed
-            Navigation::MIN_VELOCITY -= 5;
-            Navigation::DEF_VELOCITY -= 5;
+            Navigation::MIN_VELOCITY -= 1;
+            Navigation::DEF_VELOCITY -= 1;
+            Navigation::DEF_VELOCITY -= 1;
         }
         isDecBtnPressed = false;
     }
@@ -172,8 +174,8 @@ int main(int argc, char **argv)
     ros::Subscriber signSub = nh.subscribe("/sign_detected", 10, signCallback);
     ros::Subscriber objSub = nh.subscribe("/object_detected", 10, objCallback);
     ros::Subscriber systemSub = nh.subscribe("/system", 10, systemCallback);
-    // ros::Subscriber decSpeedSub = nh.subscribe("/bt2_status", 10, decreaseSpeedCallback);
-    // ros::Subscriber incSpeedSub = nh.subscribe("/bt3_status", 10, decreaseSpeedCallback);
+    ros::Subscriber decSpeedSub = nh.subscribe("/bt2_status", 10, decreaseSpeedCallback);
+    ros::Subscriber incSpeedSub = nh.subscribe("/bt3_status", 10, increaseSpeedCallback);
 
     Navigation::DEF_VELOCITY = nh.param("/navigation/DEF_VELOCITY", 8);
     Navigation::MIN_VELOCITY = nh.param("/navigation/MIN_VELOCITY", 5);

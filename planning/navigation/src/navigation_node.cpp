@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 
+#include "std_msgs/String.h"
 #include "cds_msgs/Lane.h"
 #include "cds_msgs/SignDetected.h"
 #include "cds_msgs/System.h"
@@ -12,6 +13,7 @@ static Navigation::Lane leftLane, rightLane;
 static Navigation::TurningFlags leftTurning, rightTurning;
 
 static ros::Publisher speedPublisher, steerPublisher;
+static ros::Publisher changeSpeedPublisher;
 
 static Navigation navigation;
 static bool isStop = false;
@@ -24,10 +26,18 @@ static constexpr const int DIRECTION_LEFT = 1;
 static constexpr const int DIRECTION_RIGHT = -1;
 static int turnDirection = 0;
 
-
+static void publishChangeSpeed()
+{
+    static char buffer[50];
+    snprintf(buffer, 50, "2:1:DEF_SPEED %3d", Navigation::DEF_VELOCITY);
+    std_msgs::String msg;
+    msg.data = buffer;
+    changeSpeedPublisher.publish(msg);
+}
 
 static void increaseSpeedCallback(const std_msgs::Bool& msg)
 {
+
     if (msg.data == true)
     {
         isIncBtnPressed = true;
@@ -39,7 +49,8 @@ static void increaseSpeedCallback(const std_msgs::Bool& msg)
             // inc speed
             Navigation::MIN_VELOCITY += 1;
             Navigation::DEF_VELOCITY += 1;
-            Navigation::DEF_VELOCITY += 1;
+            Navigation::MAX_VELOCITY += 1;
+            publishChangeSpeed();
         }
         isIncBtnPressed = false;
     }
@@ -58,7 +69,8 @@ static void decreaseSpeedCallback(const std_msgs::Bool& msg)
             // dec speed
             Navigation::MIN_VELOCITY -= 1;
             Navigation::DEF_VELOCITY -= 1;
-            Navigation::DEF_VELOCITY -= 1;
+            Navigation::MAX_VELOCITY -= 1;
+            publishChangeSpeed();
         }
         isDecBtnPressed = false;
     }
@@ -187,6 +199,7 @@ int main(int argc, char **argv)
 
     speedPublisher = nh.advertise<std_msgs::Float32>("/set_speed_car_api", 10);
     steerPublisher = nh.advertise<std_msgs::Float32>("/set_steer_car_api", 10);
+    changeSpeedPublisher = nh.advertise<std_msgs::String>("/lcd_print", 10);
 
     ROS_INFO("navigation node started");
 

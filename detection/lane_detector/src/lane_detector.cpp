@@ -327,7 +327,7 @@ void LaneDetector::detectLeftRight(cv::Mat visualization, const vector<vector<Po
         max2--;
     }
 
-    if (lane1.empty() || lane2.empty()) return;
+    if (lane1.size() <= 1 || lane2.size() <= 1) return;
     vector<Point> subLane1(lane1.end() - std::min(lane1.size(), 5ul), lane1.end());
     vector<Point> subLane2(lane2.end() - std::min(lane2.size(), 5ul), lane2.end());
 

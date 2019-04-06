@@ -386,7 +386,7 @@ std::vector<bool> LaneDetector::findTurnable(const std::vector<cv::Point>& lane,
 {
     std::vector<bool> result(lane.size(), false);
     int threshold = 1;
-	for(size_t i = lane.size() - 1; i > 1; i--)
+	for(size_t i = lane.size() - 2; i > 1; i--)
 	{
 		int deltaX = lane[i].x - lane[i+1].x;
 		if (abs(deltaX) > threshold)

@@ -27,6 +27,7 @@ public:
     void update(Lane& leftLane, Lane& rightLane);
     void update(const TurningFlags& leftTurnFlags, const TurningFlags& rightTurnFlags);
     void update(const SignDetected& sign);
+    void updateObjectDirection(const int& dir);
     float getSpeed();
     float getSteer();
 
@@ -56,6 +57,7 @@ private:
     TurningFlags leftTurn, rightTurn;
     int sign;
     int skipFrameCount;
+    int objectDir;
 
     static const int LANE_WIDTH = 50;
 

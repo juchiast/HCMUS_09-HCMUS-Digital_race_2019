@@ -1,6 +1,6 @@
 #include "lane_detector.hpp"
 #include <algorithm>
-
+#include <ros/ros.h>
 using namespace cv;
 using namespace std;
 
@@ -123,12 +123,11 @@ Mat LaneDetector::preProcess(const Mat &src)
         imgThresholded);
     imshow("Binary", imgThresholded);
 
-    cv::Mat depthMask;
-    inRange(depthImage, Scalar(0), Scalar(3000), depthMask);
-    bitwise_and(depthMask, imgThresholded, imgThresholded);
-    cv::imshow("Binary crop", imgThresholded);
+    // cv::Mat depthMask;
+    // inRange(depthImage, Scalar(0), Scalar(3000), depthMask);
+    // bitwise_and(depthMask, imgThresholded, imgThresholded);
 
-    cv::imshow("DepthImage", depthImage);
+    // cv::imshow("DepthImage", depthImage);
 
     // cv::Mat depthThreshold;
     // inRange(depthImage, Scalar(depthLow), Scalar(depthHigh), depthThreshold);
@@ -160,8 +159,6 @@ Mat LaneDetector::preProcess(const Mat &src)
     // cv::imshow("Skeleton", skel);
 
     dst = birdViewTranform(imgThresholded);
-    cv::Mat depthBirdview = birdViewTranform(depthImage);
-    cv::imshow("DepthBirdview", depthBirdview);
     // dst = imgThresholded;
 
     fillLane(dst);

@@ -33,6 +33,11 @@
     <include file="$(find astra_launch)/launch/astrapro.launch" />
 
 
+   <node name="object_detector" pkg="object_detector" type="object_detector_node" output="screen">
+        <param name="depth_device" value="kinect" type="str" />
+   </node>
+
+
     <!-- <node name="road_segmentation" pkg="road_segmentation" type="road_segmentation_node" output="screen" args="_image_transport:=compressed" cwd="node">
         <param name="sub_camera_topic" value="/camera/rgb/image_raw" />
         <param name="pub_road_topic" value="/road_segmentation/image_raw" />

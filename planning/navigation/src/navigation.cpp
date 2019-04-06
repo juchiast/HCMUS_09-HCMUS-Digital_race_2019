@@ -12,6 +12,9 @@ int Navigation::MIN_VELOCITY = 5;
 int Navigation::MAX_VELOCITY = 30;
 int Navigation::DEF_VELOCITY = 8;
 
+static const int OBJ_NONE = 0;
+static const int OBJ_LEFT = 1;
+static const int OBJ_RIGHT = 2;
 
 enum Sign
 {
@@ -31,6 +34,7 @@ static bool isLaneNull(const Navigation::Lane& lane)
 Navigation::Navigation()
     : sign{-1}, currentSpeed(DEF_VELOCITY), currentSteer{0.0f}
     , carDir(0, 1), theta{0.0f}
+    , objectDir{0}
     , visualizeImage(cv::Size(240, 320), CV_8UC3)
 {
 }
@@ -233,8 +237,17 @@ void Navigation::forward()
         //     currentSteer = errorAngle(rightLane[i] - distanceNearLaneLine);
         // }
         // else
+        if (objectDir == NONE)
         {
             currentSteer = errorAngle((leftLane[i] + rightLane[i]) / 2);
+        } else if (objectDir == RIGHT)
+        {
+            // use left lane if obj on the right
+            currentSteer = errorAngle(leftLane[i] + distanceNearLaneLine);
+        } else if (objectDir == LEFT)
+        {
+            // use right lane if obj on the left
+            currentSteer = errorAngle(rightLane[i] - distanceNearLaneLine);
         }
     }
     else if (leftLane[i] != null)
@@ -252,7 +265,10 @@ bool Navigation::isTurning() const
     return (this->sign == Sign::SLOW || this->sign == Sign::LEFT || this->sign == Sign::RIGHT);
 }
 
-
+void Navigation::updateObjectDirection(const int& direction)
+{
+    this->objectDir = direction;
+}
 
 Navigation::Lane Navigation::approximateLeftLane(const Navigation::Lane& rightLane)
 {

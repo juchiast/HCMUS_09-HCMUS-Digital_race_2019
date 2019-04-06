@@ -12,6 +12,7 @@ add_message_files(
   LandMark.msg
   Lane.msg
   SignDetected.msg
+  Object.msg
   System.msg
 )
 

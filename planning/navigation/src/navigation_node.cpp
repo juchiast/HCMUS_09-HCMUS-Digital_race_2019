@@ -3,6 +3,7 @@
 #include "cds_msgs/Lane.h"
 #include "cds_msgs/SignDetected.h"
 #include "cds_msgs/System.h"
+#include "cds_msgs/Object.h"
 #include "std_msgs/Float32.h"
 
 #include "navigation.hpp"
@@ -132,6 +133,11 @@ static void signCallback(const cds_msgs::SignDetected &signMsg)
     navigation.update(sign);
 }
 
+static void objCallback(const cds_msgs::Object &msg)
+{
+    navigation.updateObjectDirection(msg.direction);
+}
+
 static void publishWhenTurning()
 {
     static const float SPEED_TURN = 0.5 * 8 * 5 / 18.0f; // m/s
@@ -164,6 +170,7 @@ int main(int argc, char **argv)
 
     ros::Subscriber laneSub = nh.subscribe("/lane_detected", 10, laneCallback);
     ros::Subscriber signSub = nh.subscribe("/sign_detected", 10, signCallback);
+    ros::Subscriber objSub = nh.subscribe("/object_detected", 10, objCallback);
     ros::Subscriber systemSub = nh.subscribe("/system", 10, systemCallback);
     // ros::Subscriber decSpeedSub = nh.subscribe("/bt2_status", 10, decreaseSpeedCallback);
     // ros::Subscriber incSpeedSub = nh.subscribe("/bt3_status", 10, decreaseSpeedCallback);

@@ -69,7 +69,7 @@ void LaneDetector::detect()
     // cv::Mat filteredImage;
     // colorImage.copyTo(filteredImage, depthMask);
     // cv::imshow("Filtered", filteredImage);
-    
+
     Mat img = preProcess(colorImage);
 
     cv::Mat visualization;
@@ -116,6 +116,9 @@ Mat LaneDetector::preProcess(const Mat &src)
 
     cvtColor(src, imgHSV, COLOR_BGR2HSV);
 
+    // std::vector<cv::Mat> hsvImgs;
+    // cv::split(imgHSV, hsvImgs);
+    // cv::imshow("S", hsvImgs[1]);
 
     inRange(imgHSV, 
         Scalar(minThreshold[0], minThreshold[1], minThreshold[2]),
@@ -123,9 +126,9 @@ Mat LaneDetector::preProcess(const Mat &src)
         imgThresholded);
     imshow("Binary", imgThresholded);
 
-    // cv::Mat depthMask;
-    // inRange(depthImage, Scalar(0), Scalar(3000), depthMask);
-    // bitwise_and(depthMask, imgThresholded, imgThresholded);
+    cv::Mat depthMask;
+    inRange(depthImage, Scalar(0), Scalar(3000), depthMask);
+    bitwise_and(depthMask, imgThresholded, imgThresholded);
 
     // cv::imshow("DepthImage", depthImage);
 

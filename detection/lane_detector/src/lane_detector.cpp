@@ -334,8 +334,9 @@ void LaneDetector::detectLeftRight(cv::Mat visualization, const vector<vector<Po
         max2--;
     }
 
-    vector<Point> subLane1(lane1.end() - 5, lane1.end());
-    vector<Point> subLane2(lane2.end() - 5, lane2.end());
+if (lane1.size() <= 1 || lane2.size() <= 1) return;
+    vector<Point> subLane1(lane1.end() - std::min(lane1.size(), 5ul), lane1.end());
+    vector<Point> subLane2(lane2.end() - std::min(lane2.size(), 5ul), lane2.end());
 
     Vec4f line1, line2;
 
@@ -386,7 +387,7 @@ std::vector<bool> LaneDetector::findTurnable(const std::vector<cv::Point>& lane,
 {
     std::vector<bool> result(lane.size(), false);
     int threshold = 1;
-	for(size_t i = lane.size() - 1; i > 1; i--)
+	for(size_t i = lane.size() - 2; i > 1; i--)
 	{
 		int deltaX = lane[i].x - lane[i+1].x;
 		if (abs(deltaX) > threshold)

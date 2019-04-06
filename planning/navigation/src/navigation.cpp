@@ -142,6 +142,7 @@ float Navigation::getSteer()
     else if (this->sign == RIGHT)
     {
         turnRight();
+
     }
     else
     {
@@ -176,8 +177,8 @@ void Navigation::turnRight()
     }
 
 
-    leftLane = approximateLeftLane(rightLane);
-    currentSteer = errorAngle((leftLane[i] + leftLane[i])/2);
+    // leftLane = approximateLeftLane(rightLane);
+    // currentSteer = errorAngle((leftLane[i] + rightLane[i])/2);
 
 
     // if (!rightTurn[i])
@@ -186,7 +187,7 @@ void Navigation::turnRight()
     // }
     // else
     // {
-    //     currentSteer = errorAngle(rightLane[i] - distanceNearLaneLine);
+        currentSteer = errorAngle(rightLane[i] - distanceNearLaneLine);
     // }
 }
 
@@ -199,10 +200,10 @@ void Navigation::turnLeft()
         return;
     }
 
-    rightLane = approximateRightLane(leftLane);
+    // rightLane = approximateRightLane(leftLane);
 
     
-    currentSteer = errorAngle((leftLane[i] + rightLane[i])/2);
+    // currentSteer = errorAngle((leftLane[i] + rightLane[i])/2);
 
     // if (!leftTurn[i])
     // {
@@ -210,13 +211,13 @@ void Navigation::turnLeft()
     // }
     // else
     // {
-    //     currentSteer = errorAngle(leftLane[i] + distanceNearLaneLine);
+        currentSteer = errorAngle(leftLane[i] + distanceNearLaneLine);
     // }
 }
 
 void Navigation::forward()
 {
-    int i = rightLane.size() - 7;
+    int i = rightLane.size() - 3;
     if (i < 0)
     {
         return;

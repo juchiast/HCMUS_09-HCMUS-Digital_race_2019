@@ -168,10 +168,10 @@ int main(int argc, char **argv)
 
     ros::NodeHandle nh;
 
-    ros::Subscriber laneSub = nh.subscribe("/lane_detected", 10, laneCallback);
-    ros::Subscriber signSub = nh.subscribe("/sign_detected", 10, signCallback);
-    ros::Subscriber objSub = nh.subscribe("/object_detected", 10, objCallback);
-    ros::Subscriber systemSub = nh.subscribe("/system", 10, systemCallback);
+    ros::Subscriber laneSub = nh.subscribe("/lane_detected", 1, laneCallback);
+    ros::Subscriber signSub = nh.subscribe("/sign_detected", 1, signCallback);
+    ros::Subscriber objSub = nh.subscribe("/object_detected", 1, objCallback);
+    ros::Subscriber systemSub = nh.subscribe("/system", 1, systemCallback);
     // ros::Subscriber decSpeedSub = nh.subscribe("/bt2_status", 10, decreaseSpeedCallback);
     // ros::Subscriber incSpeedSub = nh.subscribe("/bt3_status", 10, decreaseSpeedCallback);
 
@@ -205,7 +205,11 @@ int main(int argc, char **argv)
         // {
             publishSpeed(navigation.getSpeed());
             publishSteer(navigation.getSteer());
-            navigation.visualize();
+            if (shouldTurn)
+            {
+                ros::Duration(0.5f).sleep();
+            }
+            // navigation.visualize();
         }
 
 

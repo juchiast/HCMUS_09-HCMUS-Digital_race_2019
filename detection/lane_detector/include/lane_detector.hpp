@@ -56,8 +56,8 @@ private:
     bool isLeftCurve(const LanePoint& points) const;
     bool isRightCurve(const LanePoint& points) const;
 
-    int minThreshold[3] = {0, 0, 180};
-    int maxThreshold[3] = {179, 65, 255}; // 179, 30, 255
+    int minThreshold[3] = {0, 0, 230};
+    int maxThreshold[3] = {179, 22, 255}; // 179, 30, 255
     int minShadowTh[3] = {90, 43, 36};
     int maxShadowTh[3] = {120, 81, 171};
     int minLaneInShadow[3] = {90, 43, 97};

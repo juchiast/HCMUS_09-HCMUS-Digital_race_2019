@@ -16,6 +16,7 @@ int BIRDVIEW_WIDTH = 240;
 int BIRDVIEW_HEIGHT = 320;
 int delta_width_bot = 105;
 
+int low_H = 0, low_S = 0, low_V = 180, high_H = 179, high_S = 65, high_V = 255;
 
 static void signMsgCallback(const cds_msgs::SignDetected &msg)
 {
@@ -58,23 +59,24 @@ static void processImageCallback(cv::Mat frame)
     cv::cvtColor(frame, hsv, cv::COLOR_BGR2HSV);
 
     cv::Mat binary;
-    cv::inRange(hsv, cv::Scalar(0, 0, 180), cv::Scalar(179, 65, 255), binary);
+    cv::inRange(hsv, cv::Scalar(low_H, low_S, low_V), cv::Scalar(high_H, high_S, high_V), binary);
+    cv::imshow("Binary_config", binary);
 
-    cv::Mat binaryColor;
-    cv::cvtColor(binary, binaryColor, cv::COLOR_GRAY2BGR);
+    // cv::Mat binaryColor;
+    // cv::cvtColor(binary, binaryColor, cv::COLOR_GRAY2BGR);
 
-    cv::Mat visualize;
-    cv::hconcat(frame, binaryColor, visualize);
+    // cv::Mat visualize;
+    // cv::hconcat(frame, binaryColor, visualize);
 
-    cv::imshow("LineSegement", visualize);
+    // cv::imshow("LineSegement", visualize);
 
-    binary = birdViewTranform(binary);
-    binaryColor = birdViewTranform(binaryColor);
+    // binary = birdViewTranform(binary);
+    // binaryColor = birdViewTranform(binaryColor);
 
-    cv::Mat frameIPM = birdViewTranform(frame);
+    // cv::Mat frameIPM = birdViewTranform(frame);
 
-    cv::hconcat(frameIPM, binaryColor, visualize);
-    cv::imshow("birdview", visualize);
+    // cv::hconcat(frameIPM, binaryColor, visualize);
+    // cv::imshow("birdview", visualize);
     cv::waitKey(1);
 }
 
@@ -102,11 +104,14 @@ int main(int argc, char **argv)
 
     cv::namedWindow("config");
     
-    cv::createTrackbar("skyline", "config", &skyLine, 480);
 
-    cv::createTrackbar("birdview width", "config", &BIRDVIEW_WIDTH, 640);
-    cv::createTrackbar("birdview height", "config", &BIRDVIEW_HEIGHT, 640);
-    cv::createTrackbar("delta_width", "config", &delta_width_bot, 640);
+    cv::createTrackbar("low hue", "config", &low_H, 180);
+    cv::createTrackbar("high hue", "config", &high_H, 180);
+    cv::createTrackbar("low saturation", "config", &low_S, 255);
+    cv::createTrackbar("high saturation", "config", &high_S, 255);
+    cv::createTrackbar("low value", "config", &low_V, 255);
+    cv::createTrackbar("high value", "config", &high_V, 255);
+
     
     image_transport::ImageTransport it(nh);
     image_transport::Subscriber sub = it.subscribe("/camera/rgb/image_raw", 10, imageCallback);

@@ -67,6 +67,7 @@ static void visualizeSign(cv::Mat colorImage, const cds_msgs::SignDetected &sign
     cv::rectangle(visualizeImage, textPos, textPos + cv::Point(textSize.width + 2 * padding, textSize.height + 2 * padding), foregroundColor, 1, cv::LineTypes::LINE_4);
     cv::putText(visualizeImage, signLabel, textPos + cv::Point(padding, padding + baseline * 2), fontface, scale, textColor, thickness, 8);
 
+    ROS_INFO("ASDSKLAJDKASLJDK");
     cv::imshow(VISUALIZE_WIN_NAME, visualizeImage);
     cv::waitKey(1);
 }
@@ -94,6 +95,7 @@ static void imageCallback(const sensor_msgs::ImageConstPtr &msg)
     try
     {
         cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+        ROS_INFO("image callback!!!");
         publishSign(cv_ptr->image);
     }
     catch (cv_bridge::Exception &e)
@@ -116,8 +118,7 @@ int main(int argc, char **argv)
 
     signDetector = new SignDetector(left_image_path, right_image_path);
 
-    image_transport::ImageTransport it(nh);
-    image_transport::Subscriber sub = it.subscribe("/camera/rgb/image_raw", 1, imageCallback);
+    ros::Subscriber sub = nh.subscribe("/camera/rgb/image_raw", 1, imageCallback);
 
     signPublisher = nh.advertise<cds_msgs::SignDetected>("sign_detected", 10);
 

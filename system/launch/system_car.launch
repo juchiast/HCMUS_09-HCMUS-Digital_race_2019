@@ -1,5 +1,5 @@
 <launch>
-    <node name="traffic_sign_detector" pkg="traffic_sign_detector" type="traffic_sign_detector_node" output="screen" args="_image_transport:=compressed" cwd="node">
+    <node name="traffic_sign_detector" pkg="traffic_sign_detector" type="traffic_sign_detector_node" output="screen" cwd="node">
         <param name="left_image_path" value="$(find traffic_sign_detector)/images/left.png" />
         <param name="right_image_path" value="$(find traffic_sign_detector)/images/right.png" />
     </node>  

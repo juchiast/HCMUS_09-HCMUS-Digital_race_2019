@@ -69,7 +69,6 @@ void LaneDetector::detect()
     // cv::Mat filteredImage;
     // colorImage.copyTo(filteredImage, depthMask);
     // cv::imshow("Filtered", filteredImage);
-
     Mat img = preProcess(colorImage);
 
     cv::Mat visualization;
@@ -77,12 +76,9 @@ void LaneDetector::detect()
 
     vector<Mat> layers = splitLayer(img);
     
-
     vector<vector<Point>> centroidPoints = findLayerCentroids(layers);
     visualizeCentroids(visualization, centroidPoints);
-
     detectLeftRight(visualization, centroidPoints);
-
     // post processing
     int numPoints = BIRDVIEW_HEIGHT / slideThickness;
     if (countNonNull(leftLane) < 5)
@@ -98,13 +94,10 @@ void LaneDetector::detect()
     {
         std::swap(leftLane, rightLane);
     }
-
     visualizeLanes(visualization);
-
 
     leftTurn = findTurnable(leftLane, visualization);
     rightTurn = findTurnable(rightLane, visualization);
-
 
     cv::imshow("Lane detection", visualization);
     cv::waitKey(1);
@@ -334,8 +327,9 @@ void LaneDetector::detectLeftRight(cv::Mat visualization, const vector<vector<Po
         max2--;
     }
 
-    vector<Point> subLane1(lane1.end() - 5, lane1.end());
-    vector<Point> subLane2(lane2.end() - 5, lane2.end());
+    if (lane1.empty() || lane2.empty()) return;
+    vector<Point> subLane1(lane1.end() - std::min(lane1.size(), 5ul), lane1.end());
+    vector<Point> subLane2(lane2.end() - std::min(lane2.size(), 5ul), lane2.end());
 
     Vec4f line1, line2;
 
@@ -373,6 +367,7 @@ void LaneDetector::detectLeftRight(cv::Mat visualization, const vector<vector<Po
             rightLane[floor(lane1[i].y / slideThickness)] = lane1[i];
         }
     }
+
 }
 
 bool LaneDetector::isLaneNull(const LanePoint& points) const

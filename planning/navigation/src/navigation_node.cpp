@@ -12,6 +12,8 @@
 static Navigation::Lane leftLane, rightLane;
 static Navigation::TurningFlags leftTurning, rightTurning;
 
+static const float STEER_SPEED = 45.0 / 20;
+
 static ros::Publisher speedPublisher, steerPublisher;
 static ros::Publisher changeSpeedPublisher;
 
@@ -25,6 +27,7 @@ static bool shouldTurn = false;
 static constexpr const int DIRECTION_LEFT = 1;
 static constexpr const int DIRECTION_RIGHT = -1;
 static int turnDirection = 0;
+static float currentAngle = 0;
 
 static void publishSpeedChange()
 {
@@ -196,10 +199,12 @@ int main(int argc, char **argv)
     ROS_INFO("MIN_VELOCITY = %d", Navigation::MIN_VELOCITY);
     ROS_INFO("MAX_VELOCITY = %d", Navigation::MAX_VELOCITY);
 
-    speedPublisher = nh.advertise<std_msgs::Float32>("/set_speed_car_api", 10);
-    steerPublisher = nh.advertise<std_msgs::Float32>("/set_steer_car_api", 10);
+    speedPublisher = nh.advertise<std_msgs::Float32>("/set_speed_car_api", 1);
+    steerPublisher = nh.advertise<std_msgs::Float32>("/set_steer_car_api", 1);
     changeSpeedPublisher = nh.advertise<std_msgs::String>("/lcd_print", 10);
     ROS_INFO("navigation node started");
+
+    currentAngle = 0;
 
     ros::Rate rate{15};
     while (ros::ok())
@@ -210,6 +215,7 @@ int main(int argc, char **argv)
         {
             publishSpeed(0);
             publishSteer(0);
+            currentAngle = 0;
         } else 
         // if (shouldTurn)
         {
@@ -217,7 +223,9 @@ int main(int argc, char **argv)
         // } else 
         // {
             publishSpeed(navigation.getSpeed());
-            publishSteer(navigation.getSteer());
+
+            currentAngle += STEER_SPEED * (navigation.getSteer() > currentAngle? 1 : -1);
+            publishSteer(currentAngle);
             if (shouldTurn)
             {
                 ros::Duration(0.3f).sleep();

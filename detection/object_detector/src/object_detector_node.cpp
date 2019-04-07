@@ -48,7 +48,7 @@ static void detectObjectKinect(cv::Mat depthImage)
 {
     cv::Mat depthThreshold;
     inRange(depthImage, Scalar(depthLow), Scalar(depthHigh), depthThreshold);
-    int height = 0.7 * depthThreshold.rows;
+    int height = 0.4 * depthThreshold.rows;
     depthThreshold(cv::Rect(0, height, depthThreshold.cols, depthThreshold.rows - height)) = Scalar(0);
     // cv::imshow("DepthThreshold", depthThreshold);
 

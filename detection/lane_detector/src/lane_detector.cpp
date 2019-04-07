@@ -124,7 +124,6 @@ Mat LaneDetector::preProcess(const Mat &src)
         Scalar(minThreshold[0], minThreshold[1], minThreshold[2]),
         Scalar(maxThreshold[0], maxThreshold[1], maxThreshold[2]),
         imgThresholded);
-    imshow("Binary", imgThresholded);
 
     cv::Mat depthMask;
     inRange(depthImage, Scalar(0), Scalar(3000), depthMask);
@@ -160,6 +159,8 @@ Mat LaneDetector::preProcess(const Mat &src)
     // } while (!done);
     
     // cv::imshow("Skeleton", skel);
+    imshow("Binary", imgThresholded);
+
 
     dst = birdViewTranform(imgThresholded);
     // dst = imgThresholded;

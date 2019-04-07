@@ -5,6 +5,7 @@
 #include "cds_msgs/System.h"
 #include "cds_msgs/Object.h"
 #include "std_msgs/Float32.h"
+#include "std_msgs/String.h"
 
 #include "navigation.hpp"
 
@@ -12,6 +13,7 @@ static Navigation::Lane leftLane, rightLane;
 static Navigation::TurningFlags leftTurning, rightTurning;
 
 static ros::Publisher speedPublisher, steerPublisher;
+static ros::Publisher changeSpeedPublisher;
 
 static Navigation navigation;
 static bool isStop = false;
@@ -24,7 +26,14 @@ static constexpr const int DIRECTION_LEFT = 1;
 static constexpr const int DIRECTION_RIGHT = -1;
 static int turnDirection = 0;
 
-
+static void publishSpeedChange()
+{
+    static char buffer[50];
+    snprintf(buffer, 50, "1:1:DEF_VELOCITY %3d", Navigation::DEF_VELOCITY);
+    std_msgs::String msg;
+    msg.data = buffer;
+    changeSpeedPublisher.publish(msg);
+}
 
 static void increaseSpeedCallback(const std_msgs::Bool& msg)
 {
@@ -37,8 +46,10 @@ static void increaseSpeedCallback(const std_msgs::Bool& msg)
         if (isIncBtnPressed == true)
         {
             // inc speed
-            Navigation::MIN_VELOCITY += 5;
-            Navigation::DEF_VELOCITY += 5;
+            Navigation::MIN_VELOCITY += 1;
+            Navigation::DEF_VELOCITY += 1;
+            Navigation::MAX_VELOCITY += 1;
+            publishSpeedChange();
         }
         isIncBtnPressed = false;
     }
@@ -55,8 +66,10 @@ static void decreaseSpeedCallback(const std_msgs::Bool& msg)
         if (isDecBtnPressed == true)
         {
             // dec speed
-            Navigation::MIN_VELOCITY -= 5;
-            Navigation::DEF_VELOCITY -= 5;
+            Navigation::MIN_VELOCITY -= 1;
+            Navigation::DEF_VELOCITY -= 1;
+            Navigation::MAX_VELOCITY -= 1;
+            publishSpeedChange();
         }
         isDecBtnPressed = false;
     }
@@ -113,7 +126,7 @@ static void laneCallback(const cds_msgs::LaneConstPtr &laneMsg)
 
 static bool isTurn(const cds_msgs::SignDetected& signMsg)
 {
-    return signMsg.width * signMsg.height > 4200;
+    return signMsg.width * signMsg.height > 3800;
 }
 
 static void signCallback(const cds_msgs::SignDetected &signMsg)
@@ -172,8 +185,8 @@ int main(int argc, char **argv)
     ros::Subscriber signSub = nh.subscribe("/sign_detected", 1, signCallback);
     ros::Subscriber objSub = nh.subscribe("/object_detected", 1, objCallback);
     ros::Subscriber systemSub = nh.subscribe("/system", 1, systemCallback);
-    // ros::Subscriber decSpeedSub = nh.subscribe("/bt2_status", 10, decreaseSpeedCallback);
-    // ros::Subscriber incSpeedSub = nh.subscribe("/bt3_status", 10, decreaseSpeedCallback);
+    ros::Subscriber decSpeedSub = nh.subscribe("/bt2_status", 10, increaseSpeedCallback);
+    ros::Subscriber incSpeedSub = nh.subscribe("/bt3_status", 10, decreaseSpeedCallback);
 
     Navigation::DEF_VELOCITY = nh.param("/navigation/DEF_VELOCITY", 8);
     Navigation::MIN_VELOCITY = nh.param("/navigation/MIN_VELOCITY", 5);
@@ -185,10 +198,10 @@ int main(int argc, char **argv)
 
     speedPublisher = nh.advertise<std_msgs::Float32>("/set_speed_car_api", 10);
     steerPublisher = nh.advertise<std_msgs::Float32>("/set_steer_car_api", 10);
-
+    changeSpeedPublisher = nh.advertise<std_msgs::String>("/lcd_print", 10);
     ROS_INFO("navigation node started");
 
-    ros::Rate rate{10};
+    ros::Rate rate{15};
     while (ros::ok())
     {
         ros::spinOnce();
@@ -207,7 +220,7 @@ int main(int argc, char **argv)
             publishSteer(navigation.getSteer());
             if (shouldTurn)
             {
-                ros::Duration(0.5f).sleep();
+                ros::Duration(0.3f).sleep();
             }
             // navigation.visualize();
         }
